@@ -1,0 +1,32 @@
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+eclipse.project.name = appName + '-core'
+
+dependencies {
+  api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+  api "com.badlogicgames.gdx:gdx:$gdxVersion"
+
+  if(enableGraalNative == 'true') {
+    implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
+  }
+
+  // --- AGGIUNTA JUNIT 5 ---
+  // Libreria principale per scrivere i test
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+  // Engine per eseguire i test
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+  // Opzionale: Mockito (utilissimo per mockare le classi di LibGDX che richiedono grafica)
+  testImplementation 'org.mockito:mockito-core:5.10.0'
+  testImplementation 'org.mockito:mockito-junit-jupiter:5.10.0'
+}
+
+// --- CONFIGURAZIONE TASK DI TEST ---
+test {
+  useJUnitPlatform() // Obbligatorio per JUnit 5
+
+  // Mostra l'output nella console di Gradle (utile per vedere cosa passa/fallisce)
+  testLogging {
+    events "passed", "skipped", "failed"
+    exceptionFormat "full"
+  }
+}
