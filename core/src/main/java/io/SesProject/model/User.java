@@ -1,64 +1,63 @@
 package io.SesProject.model;
 
+import io.SesProject.model.memento.Memento;
+import io.SesProject.model.memento.UserMemento;
+
+
+
+
+
 public class User {
 
-    private String username;
-    private int level;
+    private String accountName;
+    private PlayerCharacter p1;
+    private PlayerCharacter p2;
 
-    // Nuovi campi di esempio per dare senso al salvataggio
-    private int currentHp = 100;
-    private int maxHp = 100;
-    private int xp = 0;
-    private float x = 0, y = 0; // Posizione nel mondo
-    private String currentMap = "start_village";
-
-    // Costruttore vuoto per Json LibGDX
     public User() {}
 
-    public User(String username) {
-        this.username = username;
-        this.level = 1;
+    public User(String accountName) {
+        this.accountName = accountName;
+        // Valori di default
+        this.p1 = new PlayerCharacter("Giocatore 1", "Warrior");
+        this.p2 = new PlayerCharacter("Giocatore 2", "Mage");
     }
 
-    // --- MEMENTO PATTERN: SAVE ---
-    // Crea un'istantanea dello stato corrente
+    // --- MEMENTO: SAVE (Delegato) ---
     public Memento save() {
-        return new UserMemento(
-            this.username,
-            this.level,
-            this.currentHp,
-            this.maxHp,
-            this.xp,
-            this.x,
-            this.y,
-            this.currentMap
-        );
+        UserMemento m = new UserMemento();
+        m.accountName = this.accountName;
+
+        // DELEGAZIONE: User chiede a P1 e P2 di salvarsi da soli.
+        // User non conosce i campi interni (hp, level) dei PlayerCharacter qui.
+        if (this.p1 != null) m.player1 = this.p1.save();
+        if (this.p2 != null) m.player2 = this.p2.save();
+
+        return m;
     }
 
-    // --- MEMENTO PATTERN: RESTORE ---
-    // Ripristina lo stato da un memento
+    // --- MEMENTO: RESTORE (Delegato) ---
     public void restore(Memento m) {
-        // Controllo di sicurezza
-        if (!(m instanceof UserMemento)) {
-            throw new IllegalArgumentException("Memento non valido per User");
-        }
-
+        if (!(m instanceof UserMemento)) throw new IllegalArgumentException("Memento errato");
         UserMemento state = (UserMemento) m;
 
-        this.username = state.username;
-        this.level = state.level;
-        this.currentHp = state.currentHp;
-        this.maxHp = state.maxHp;
-        this.xp = state.xp;
-        this.x = state.x;
-        this.y = state.y;
-        this.currentMap = state.currentMapName;
+        this.accountName = state.accountName;
 
-        System.out.println("Stato utente ripristinato: Livello " + level + " - Mappa " + currentMap);
+        // DELEGAZIONE: Ricostruiamo gli oggetti e diciamo loro di ripristinarsi
+        if (state.player1 != null) {
+            // Se p1 non esiste lo creo, altrimenti lo aggiorno
+            if (this.p1 == null) this.p1 = new PlayerCharacter();
+            this.p1.restore(state.player1);
+        }
+
+        if (state.player2 != null) {
+            if (this.p2 == null) this.p2 = new PlayerCharacter();
+            this.p2.restore(state.player2);
+        }
+
+        System.out.println("Ripristino completato per account: " + accountName);
     }
 
-    // Getters e Setters standard...
-    public String getUsername() { return username; }
-    public void setPosition(float x, float y) { this.x = x; this.y = y; }
-    // ... altri getter
+    public String getUsername() { return accountName; }
+    public PlayerCharacter getP1() { return p1; }
+    public PlayerCharacter getP2() { return p2; }
 }

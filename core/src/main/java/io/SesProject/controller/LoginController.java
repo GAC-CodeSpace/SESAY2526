@@ -2,7 +2,7 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
-import io.SesProject.model.Memento;
+import io.SesProject.model.memento.Memento;
 import io.SesProject.model.User;
 import io.SesProject.service.AuthService;
 import io.SesProject.service.SaveService;
