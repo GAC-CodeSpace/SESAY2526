@@ -26,11 +26,11 @@ public class RegisterScreen extends BaseMenuScreen {
 
     @Override
     protected void buildUI() {
-        rootTable.add(new Label("CREA NUOVO EROE", skin)).padBottom(30).row();
+        rootTable.add(new Label("CREA NUOVO PROFILO DI COPPIA", skin)).padBottom(30).row();
 
-        // Campo input
+        // Assegna alla variabile di classe (senza ridichiarare il tipo)
         userField = new TextField("", skin);
-        userField.setMessageText("Scegli un nome univoco");
+        userField.setMessageText("Nome Squadra");
         rootTable.add(userField).width(300).padBottom(20).row();
 
         // Bottone Conferma

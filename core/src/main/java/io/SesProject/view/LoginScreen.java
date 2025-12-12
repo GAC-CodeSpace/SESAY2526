@@ -25,12 +25,11 @@ public class LoginScreen extends BaseMenuScreen {
 
     @Override
     protected void buildUI() {
-        // Titolo
-        rootTable.add(new Label("BENVENUTO AVVENTURIERO", skin)).padBottom(50).row();
+        rootTable.add(new Label("ACCEDI AL GIOCO", skin)).padBottom(30).row();
 
-        // Campo Username
         userField = new TextField("", skin);
-        userField.setMessageText("Inserisci il nome del tuo eroe");
+        userField.setMessageText("Nome del Profilo"); // Aggiornato
+        rootTable.add(userField).width(300).padBottom(20).row();
         // Centriamo e diamo una dimensione
         rootTable.add(userField).width(300).height(40).padBottom(20).row();
 
