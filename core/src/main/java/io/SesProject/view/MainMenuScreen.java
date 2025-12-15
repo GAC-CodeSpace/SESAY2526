@@ -7,73 +7,55 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import io.SesProject.controller.MainMenuController;
+import io.SesProject.model.menu.MenuComponent;
 
 
 public class MainMenuScreen extends BaseMenuScreen {
 
+    @SuppressWarnings("unused")
     private MainMenuController controller;
+    private MenuComponent menuRoot;
 
-    public MainMenuScreen(MainMenuController controller) {
+    /**
+     * @param controller Il controller che gestisce questa view
+     * @param menuRoot La radice dell'albero Composite da disegnare
+     */
+    public MainMenuScreen(MainMenuController controller, MenuComponent menuRoot) {
         super();
         this.controller = controller;
-        setupListeners();
+        this.menuRoot = menuRoot;
+
+        // Ricostruiamo la UI ora che abbiamo i dati del menu
+        rootTable.clear();
+        buildUI();
     }
 
     @Override
     protected void buildUI() {
-        // Possiamo personalizzare il titolo con il nome utente se vogliamo
-        // Ma per ora teniamo un titolo generico
-        rootTable.add(new Label("MENU PRINCIPALE", skin)).padBottom(40).row();
+        // Controllo di sicurezza
+        if (menuRoot == null) return;
 
-        // 1. Gioca
-        TextButton playBtn = new TextButton("GIOCA", skin);
-        rootTable.add(playBtn).width(250).padBottom(15).row();
+        // 1. Titolo del Menu
+        Label titleLabel = new Label(menuRoot.getName(), skin);
+        titleLabel.setFontScale(2.0f); // Titolo più grande
+        rootTable.add(titleLabel).padBottom(50).row();
 
-        // 2. Opzioni (Placeholder per il futuro)
-        TextButton optionsBtn = new TextButton("OPZIONI", skin);
-        rootTable.add(optionsBtn).width(250).padBottom(15).row();
+        // 2. Iterazione sui figli (Composite Pattern)
+        for (MenuComponent child : menuRoot.getChildren()) {
 
-        // 3. Logout
-        TextButton logoutBtn = new TextButton("LOGOUT", skin);
-        rootTable.add(logoutBtn).width(250).padBottom(15).row();
+            // Creiamo un bottone per ogni voce del menu
+            TextButton btn = new TextButton(child.getName(), skin);
 
-        // 4. Esci
-        TextButton exitBtn = new TextButton("ESCI", skin);
-        rootTable.add(exitBtn).width(250).row();
+            // Il listener invoca il metodo select() del componente (che esegue il Command)
+            btn.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    child.select();
+                }
+            });
 
-        // Setup listener locali (o delegati a metodo setupListeners)
-        playBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.startGame();
-            }
-        });
-
-        logoutBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.logout();
-            }
-        });
-
-        exitBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                controller.exitGame();
-            }
-        });
-
-        // Listener per Opzioni (vuoto per ora)
-        optionsBtn.addListener(new ChangeListener() {
-            @Override
-            public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("Opzioni non ancora implementate");
-            }
-        });
-    }
-
-    private void setupListeners() {
-        // I listener sono stati definiti inline nel buildUI per brevità,
-        // ma puoi spostarli qui per pulizia come nelle altre classi.
+            // Aggiungiamo alla tabella UI
+            rootTable.add(btn).width(300).height(60).padBottom(20).row();
+        }
     }
 }

@@ -1,65 +1,98 @@
 package io.SesProject.controller;
 
 
-
 import com.badlogic.gdx.Gdx;
 import io.SesProject.RpgGame;
-import io.SesProject.model.User;
+import io.SesProject.controller.command.ExitGameCommand;
+import io.SesProject.controller.command.LoadGameCommand;
+import io.SesProject.controller.command.NewGameCommand;
+import io.SesProject.controller.command.OpenSettingsCommand;
+import io.SesProject.model.menu.MenuComponent;
+import io.SesProject.model.menu.MenuComposite;
+import io.SesProject.model.menu.MenuItem;
 import io.SesProject.service.AuthService;
+import io.SesProject.service.SaveService;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.MainMenuScreen;
 
-
 public class MainMenuController extends BaseController {
+
+    private SaveService saveService;
 
     public MainMenuController(RpgGame game, AuthService authService) {
         super(game, authService);
+        this.saveService = game.getSaveService();
     }
 
     @Override
     protected BaseMenuScreen createView() {
-        return new MainMenuScreen(this);
+        // Factory Method: Passiamo l'albero costruito alla View
+        return new MainMenuScreen(this, buildMenuTree());
     }
 
     /**
-     * Avvia il gioco (Passa alla GameScreen).
+     * Costruisce la struttura Composite del menu come da diagramma.
      */
-    public void startGame() {
-        System.out.println("Avvio del mondo di gioco...");
-        // TODO: Prossimo passo -> Implementare GameController e GameScreen
-        // game.changeController(new GameController(game, authService));
+    private MenuComponent buildMenuTree() {
+        MenuComposite root = new MenuComposite("MAIN MENU");
 
-        // Per ora stampiamo solo un messaggio di debug
-        System.out.println("Utente corrente: " + game.getCurrentUser().getUsername());
+        // 1. New Game (Crea una nuova partita)
+        root.add(new MenuItem("NEW GAME", new NewGameCommand(this)));
 
+        // 2. Load Game (Carica partita esistente)
+        // Nota: Abilitiamo questo tasto solo se c'è effettivamente un salvataggio
+        // o lo lasciamo sempre attivo e gestiamo la logica nel metodo.
+        root.add(new MenuItem("LOAD GAME", new LoadGameCommand(this)));
+
+        // 3. Settings (Impostazioni)
+        root.add(new MenuItem("SETTINGS", new OpenSettingsCommand(this)));
+
+        // 4. Exit (Esci)
+        root.add(new MenuItem("EXIT", new ExitGameCommand(this)));
+
+        return root;
     }
 
-    /**
-     * Effettua il logout tornando alla schermata iniziale.
-     */
-    /**
-     * Effettua il logout tornando alla schermata iniziale.
-     */
-    public void logout() {
-        // Usiamo postRunnable per evitare conflitti durante il click del mouse
-        Gdx.app.postRunnable(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("Esecuzione Logout...");
+    // --- RECEIVER METHODS (Logica richiesta dai Command) ---
 
-                // 1. Reset dell'utente
-                game.setCurrentUser(null);
+    public void newGame() {
+        System.out.println("Azione: NEW GAME selezionata.");
 
-                // 2. Cambio schermata pulito
-                game.changeController(new LoginController(game, authService));
-            }
-        });
+        // Logica: Resettiamo i dati dell'utente corrente ai valori iniziali
+        // (Utile se l'utente vuole ricominciare da zero con lo stesso account)
+        // Oppure semplicemente avviamo la scena di gioco.
+
+        // Esempio: Reset dati (opzionale)
+        // game.getCurrentUser().resetProgress();
+
+        startGameSession();
     }
 
-    /**
-     * Chiude l'applicazione.
-     */
+    public void loadGame() {
+        System.out.println("Azione: LOAD GAME selezionata.");
+
+        // Logica: Poiché abbiamo già caricato il Memento al Login,
+        // qui potremmo semplicemente confermare e avviare.
+        // In un sistema a slot multipli, qui apriremmo un sotto-menu "Scegli Slot".
+
+        startGameSession();
+    }
+
+    public void goToSettings() {
+        System.out.println("Azione: SETTINGS selezionata.");
+        // Cambio controller verso le impostazioni (placeholder)
+        // game.changeController(new SettingsController(game, authService));
+    }
+
     public void exitGame() {
+        System.out.println("Azione: EXIT selezionata.");
         Gdx.app.exit();
+    }
+
+    // Helper privato per avviare il gioco
+    private void startGameSession() {
+        System.out.println("Avvio della GameScreen...");
+        // Qui passerai al GameController vero e proprio
+        // game.changeController(new GameController(game, authService));
     }
 }
