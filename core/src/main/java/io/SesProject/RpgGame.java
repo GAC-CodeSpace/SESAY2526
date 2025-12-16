@@ -6,7 +6,10 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.SesProject.controller.BaseController;
 import io.SesProject.controller.LoginController;
+import io.SesProject.model.SettingsService;
 import io.SesProject.model.User;
+import io.SesProject.model.observer.SettingsHandler;
+import io.SesProject.service.AudioManager;
 import io.SesProject.service.AuthService;
 import io.SesProject.service.SaveService;
 
@@ -16,9 +19,11 @@ public class RpgGame extends Game {
     // (Le Screen useranno game.batch per disegnare)
     public SpriteBatch batch;
 
-    // Servizi principali (Singleton per la durata del gioco)
+    // Servizi principali
     private AuthService authService;
     private SaveService saveService;
+    private SettingsService settingsService;
+    private AudioManager audioManager;
 
     // Stato Globale: L'utente attualmente loggato
     private User currentUser;
@@ -27,16 +32,29 @@ public class RpgGame extends Game {
     public void create() {
         batch = new SpriteBatch();
 
-        // 1. Inizializziamo i servizi
+        // 1. Inizializzazione Servizi
         this.authService = new AuthService();
         this.saveService = new SaveService();
+        this.settingsService = new SettingsService();
 
-        // 2. Avviamo il gioco partendo dal Login
-        // Creiamo il primo controller e gli passiamo il riferimento al gioco e all'auth
-        LoginController startController = new LoginController(this, authService);
+        // Crea l'Audio Manager
+        this.audioManager = new AudioManager();
 
-        // 3. Attiviamo il controller
-        changeController(startController);
+        // 2. Setup Observer (Handler)
+        // Ora l'Handler riceve l'AudioManager invece di 'this'
+        SettingsHandler handler = new SettingsHandler(audioManager);
+        this.settingsService.addObserver(handler);
+
+        // 3. Applica Impostazioni Iniziali
+        // Questo farà scattare onVolumeChanged -> audioManager.setMasterVolume()
+        this.settingsService.applySettings();
+
+        // 4. Avvia Musica di Sottofondo
+        // La logica è incapsulata nel manager
+        this.audioManager.playMusic("music/AdhesiveWombat-Night Shade.mp3");
+
+        // 5. Avvia il gioco
+        changeController(new LoginController(this, authService));
     }
 
     /**
@@ -60,8 +78,6 @@ public class RpgGame extends Game {
         }
     }
 
-    // ... resto del codice ...
-
     public User getCurrentUser() {
         return currentUser;
     }
@@ -75,6 +91,13 @@ public class RpgGame extends Game {
     public SaveService getSaveService() {
         return saveService;
     }
+    public SettingsService getSettingsService() {
+        return settingsService;
+    }
+
+    public AudioManager getAudioManager() {
+        return audioManager;
+    }
 
     // --- Ciclo di vita LibGDX ---
 
@@ -86,9 +109,7 @@ public class RpgGame extends Game {
 
     @Override
     public void dispose() {
-        // Pulizia risorse grafiche alla chiusura
         if (batch != null) batch.dispose();
-        // Se la screen attiva ha risorse, super.dispose() potrebbe gestirle,
-        // ma è buona norma gestire il dispose nelle singole schermate.
+        if (audioManager != null) audioManager.dispose(); // Pulizia audio
     }
 }

@@ -80,8 +80,8 @@ public class MainMenuController extends BaseController {
 
     public void goToSettings() {
         System.out.println("Azione: SETTINGS selezionata.");
-        // Cambio controller verso le impostazioni (placeholder)
-        // game.changeController(new SettingsController(game, authService));
+        // Cambio controller verso le impostazioni
+        game.changeController(new SettingsController(game, authService));
     }
 
     public void exitGame() {
