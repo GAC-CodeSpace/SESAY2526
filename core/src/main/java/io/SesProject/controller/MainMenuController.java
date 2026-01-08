@@ -2,10 +2,7 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
-import io.SesProject.controller.command.ExitGameCommand;
-import io.SesProject.controller.command.LoadGameCommand;
-import io.SesProject.controller.command.NewGameCommand;
-import io.SesProject.controller.command.OpenSettingsCommand;
+import io.SesProject.controller.command.*;
 import io.SesProject.controller.state.ExitState;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.memento.Memento;
@@ -39,6 +36,7 @@ public class MainMenuController extends BaseController {
         root.add(new MenuItem("NUOVA PARTITA", new NewGameCommand(this)));
         root.add(new MenuItem("CARICA PARTITA", new LoadGameCommand(this)));
         root.add(new MenuItem("IMPOSTAZIONI", new OpenSettingsCommand(this)));
+        root.add(new MenuItem("LOGOUT" , new LogOutCommand(this)));
         root.add(new MenuItem("ESCI DAL GIOCO", new ExitGameCommand(this)));
 
         return root;
@@ -107,6 +105,11 @@ public class MainMenuController extends BaseController {
     public void goToSettings() {
         System.out.println("[CMD] Settings Selezionato");
         game.changeController(new SettingsController(game, authService));
+    }
+
+    public void logout(){
+        System.out.println("[CMD] vado al login");
+        game.changeController(new LoginController(game , authService));
     }
 
     public void exitGame() {
