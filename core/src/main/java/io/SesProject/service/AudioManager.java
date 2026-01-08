@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Disposable;
  */
 public class AudioManager implements Disposable {
 
+    private String currentMusicPath;
     private Music currentMusic;
     private float masterVolume = 1.0f; // Default
 
@@ -21,26 +22,34 @@ public class AudioManager implements Disposable {
      * Gestisce automaticamente lo stop della traccia precedente.
      */
     public void playMusic(String filePath) {
-        // 1. Se c'è già una musica, la fermiamo e la scarichiamo
+        // 1. CHECK INTELLIGENTE:
+        // Se la canzone richiesta è già quella che sta suonando, non fare nulla.
+        if (currentMusicPath != null && currentMusicPath.equals(filePath)) {
+            return;
+        }
+
+        // 2. Stop della musica precedente (se diversa)
         if (currentMusic != null) {
             currentMusic.stop();
             currentMusic.dispose();
         }
 
-        // 2. Controlla esistenza file
+        // 3. Caricamento nuova musica
         FileHandle file = Gdx.files.internal(filePath);
         if (!file.exists()) {
             System.err.println("[AUDIO] File non trovato: " + filePath);
             return;
         }
 
-        // 3. Carica e avvia
         try {
             currentMusic = Gdx.audio.newMusic(file);
             currentMusic.setLooping(true);
-            currentMusic.setVolume(masterVolume); // Applica subito il volume corrente
+            currentMusic.setVolume(masterVolume);
             currentMusic.play();
-            System.out.println("[AUDIO] Riproduzione avviata: " + filePath);
+
+            // Aggiorniamo la traccia corrente
+            this.currentMusicPath = filePath;
+            System.out.println("[AUDIO] Nuova traccia avviata: " + filePath);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -25,8 +26,29 @@ public abstract class BaseMenuScreen implements Screen {
         // Gestione Input
         Gdx.input.setInputProcessor(stage);
 
-        buildUI(); // Template Method
+
     }
+
+    public void showMessage(String title, String message) {
+        Dialog dialog = new Dialog(title, skin) {
+            @Override
+            protected void result(Object object) {
+                // Codice eseguito quando si preme il tasto (es. chiudi)
+                // Di default hide() viene chiamato automaticamente.
+            }
+        };
+
+        dialog.text(message);
+        dialog.button("OK", true); // Aggiunge un bottone OK che ritorna 'true'
+
+        // Opzionale: Animazione e dimensione
+        dialog.show(stage);
+        dialog.getContentTable().pad(10);
+        dialog.getButtonTable().pad(10);
+    }
+
+
+
 
     protected abstract void buildUI();
 

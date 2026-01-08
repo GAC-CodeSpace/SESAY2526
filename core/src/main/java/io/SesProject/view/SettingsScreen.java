@@ -28,7 +28,9 @@ public class SettingsScreen extends BaseMenuScreen {
     public SettingsScreen(SettingsController controller) {
         super();
         this.controller = controller;
+        buildUI();
         setupValues(); // Imposta i valori iniziali della UI in base al Service
+
     }
 
     @Override

@@ -3,78 +3,89 @@ package io.SesProject;
 
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.SesProject.controller.BaseController;
-import io.SesProject.controller.LoginController;
+import io.SesProject.controller.state.GameState;
+import io.SesProject.controller.state.InitState;
+import io.SesProject.model.GameSession;
 import io.SesProject.model.SettingsService;
 import io.SesProject.model.User;
-import io.SesProject.model.observer.SettingsHandler;
 import io.SesProject.service.AudioManager;
 import io.SesProject.service.AuthService;
 import io.SesProject.service.SaveService;
+import io.SesProject.service.SystemFacade;
+
 
 public class RpgGame extends Game {
 
-    // Risorsa grafica condivisa per evitare di crearne una per ogni schermata
-    // (Le Screen useranno game.batch per disegnare)
+    // Risorsa grafica condivisa
     public SpriteBatch batch;
 
-    // Servizi principali
-    private AuthService authService;
-    private SaveService saveService;
-    private SettingsService settingsService;
-    private AudioManager audioManager;
+    // --- SERVICES (Infrastruttura) ---
+    private SystemFacade systemFacade;
+    private AuthService authService; // Logica di Business per i profili
 
-    // Stato Globale: L'utente attualmente loggato
-    private User currentUser;
+    // --- STATE PATTERN (Ciclo di vita App) ---
+    private GameState currentAppState;
+
+    // --- DATA CONTEXT (Stato del Gioco) ---
+    private User currentUser;          // Il Profilo (es. "Mario") -> Cartella
+    private GameSession currentSession; // La Partita (HP, LVL, Mappa) -> File specifico
 
     @Override
     public void create() {
         batch = new SpriteBatch();
 
-        // 1. Inizializzazione Servizi
+        // 1. Inizializza i Servizi
+        this.systemFacade = new SystemFacade();
         this.authService = new AuthService();
-        this.saveService = new SaveService();
-        this.settingsService = new SettingsService();
 
-        // Crea l'Audio Manager
-        this.audioManager = new AudioManager();
-
-        // 2. Setup Observer (Handler)
-        // Ora l'Handler riceve l'AudioManager invece di 'this'
-        SettingsHandler handler = new SettingsHandler(audioManager);
-        this.settingsService.addObserver(handler);
-
-        // 3. Applica Impostazioni Iniziali
-        // Questo farà scattare onVolumeChanged -> audioManager.setMasterVolume()
-        this.settingsService.applySettings();
-
-        // 4. Avvia Musica di Sottofondo
-        // La logica è incapsulata nel manager
-        this.audioManager.playMusic("music/AdhesiveWombat-Night Shade.mp3");
-
-        // 5. Avvia il gioco
-        changeController(new LoginController(this, authService));
+        // 2. Avvia la macchina a stati (Inizia caricando gli asset)
+        changeAppState(new InitState());
     }
 
-    /**
-     * Metodo chiave per l'architettura MVC proposta.
-     * Riceve un nuovo Controller e delega a lui la creazione e visualizzazione della View.
-     */
+    // --- GESTIONE STATO APPLICAZIONE (Init -> Play -> Exit) ---
+
+    public void changeAppState(GameState newState) {
+        if (currentAppState != null) {
+            currentAppState.exit(this);
+        }
+        currentAppState = newState;
+        currentAppState.enter(this);
+    }
+
+    @Override
+    public void render() {
+        // Aggiorna lo stato corrente (es. caricamento asset)
+        if (currentAppState != null) {
+            currentAppState.update(this, Gdx.graphics.getDeltaTime());
+        }
+        // Disegna la schermata corrente (View)
+        super.render();
+    }
+
+    @Override
+    public void dispose() {
+        if (batch != null) batch.dispose();
+        // Nota: La pulizia profonda dei servizi avviene in ExitState tramite la Facade
+    }
+
+    // --- GESTIONE CONTROLLER (Navigazione UI) ---
+
     public void changeController(BaseController controller) {
-        // Il metodo show() del BaseController chiama createView() e poi setScreen()
         controller.show();
     }
 
-    // --- Gestione Stato Utente ---
+    // --- GETTERS & SETTERS (Contesto Dati) ---
+
     public void setCurrentUser(User user) {
         this.currentUser = user;
-
-        // MODIFICA QUI: Controlliamo se user è null prima di stampare
         if (user != null) {
-            System.out.println("Utente corrente impostato: " + user.getUsername());
+            System.out.println("[GAME CONTEXT] Profilo attivo: " + user.getUsername());
         } else {
-            System.out.println("Utente disconnesso (Logout effettuato).");
+            System.out.println("[GAME CONTEXT] Logout profilo.");
+            this.currentSession = null; // Se esce il profilo, chiudo la sessione
         }
     }
 
@@ -82,34 +93,38 @@ public class RpgGame extends Game {
         return currentUser;
     }
 
-    // --- Accesso ai Servizi ---
+    public void setCurrentSession(GameSession session) {
+        this.currentSession = session;
+        if (session != null) {
+            System.out.println("[GAME CONTEXT] Sessione di gioco caricata in memoria.");
+        }
+    }
+
+    public GameSession getCurrentSession() {
+        return currentSession;
+    }
+
+    // --- ACCESSO AI SERVIZI ---
+
+    public SystemFacade getSystemFacade() {
+        return systemFacade;
+    }
 
     public AuthService getAuthService() {
         return authService;
     }
 
+    // Metodi helper per retrocompatibilità con i Controller esistenti
+    // (Delegando alla Facade, evitiamo di dover riscrivere tutti i controller ora)
     public SaveService getSaveService() {
-        return saveService;
+        return systemFacade.getSaveService();
     }
+
     public SettingsService getSettingsService() {
-        return settingsService;
+        return systemFacade.getSettingsService();
     }
 
     public AudioManager getAudioManager() {
-        return audioManager;
-    }
-
-    // --- Ciclo di vita LibGDX ---
-
-    @Override
-    public void render() {
-        // Importante: delega il render alla Screen attiva (LoginScreen, GameScreen, ecc.)
-        super.render();
-    }
-
-    @Override
-    public void dispose() {
-        if (batch != null) batch.dispose();
-        if (audioManager != null) audioManager.dispose(); // Pulizia audio
+        return systemFacade.getAudioManager();
     }
 }

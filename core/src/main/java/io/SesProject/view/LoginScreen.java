@@ -20,7 +20,9 @@ public class LoginScreen extends BaseMenuScreen {
     public LoginScreen(LoginController controller) {
         super(); // Chiama implicitamente buildUI()
         this.controller = controller;
+        buildUI();
         setupListeners();
+
     }
 
     @Override
