@@ -21,7 +21,9 @@ public class RegisterScreen extends BaseMenuScreen {
     public RegisterScreen(RegisterController controller) {
         super();
         this.controller = controller;
+        buildUI();
         setupListeners();
+
     }
 
     @Override

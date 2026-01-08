@@ -1,98 +1,117 @@
 package io.SesProject.controller;
 
 
-import com.badlogic.gdx.Gdx;
 import io.SesProject.RpgGame;
 import io.SesProject.controller.command.ExitGameCommand;
 import io.SesProject.controller.command.LoadGameCommand;
 import io.SesProject.controller.command.NewGameCommand;
 import io.SesProject.controller.command.OpenSettingsCommand;
+import io.SesProject.controller.state.ExitState;
+import io.SesProject.model.GameSession;
+import io.SesProject.model.memento.Memento;
 import io.SesProject.model.menu.MenuComponent;
 import io.SesProject.model.menu.MenuComposite;
 import io.SesProject.model.menu.MenuItem;
 import io.SesProject.service.AuthService;
-import io.SesProject.service.SaveService;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.MainMenuScreen;
 
 public class MainMenuController extends BaseController {
 
-    private SaveService saveService;
-
     public MainMenuController(RpgGame game, AuthService authService) {
         super(game, authService);
-        this.saveService = game.getSaveService();
+        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
     }
 
     @Override
     protected BaseMenuScreen createView() {
-        // Factory Method: Passiamo l'albero costruito alla View
+        // Factory Method: crea la View e gli passa l'albero del menu
         return new MainMenuScreen(this, buildMenuTree());
     }
 
     /**
-     * Costruisce la struttura Composite del menu come da diagramma.
+     * Costruisce la struttura del menu (Pattern Composite).
      */
     private MenuComponent buildMenuTree() {
-        MenuComposite root = new MenuComposite("MAIN MENU");
+        MenuComposite root = new MenuComposite("MENU PRINCIPALE");
 
-        // 1. New Game (Crea una nuova partita)
-        root.add(new MenuItem("NEW GAME", new NewGameCommand(this)));
-
-        // 2. Load Game (Carica partita esistente)
-        // Nota: Abilitiamo questo tasto solo se c'è effettivamente un salvataggio
-        // o lo lasciamo sempre attivo e gestiamo la logica nel metodo.
-        root.add(new MenuItem("LOAD GAME", new LoadGameCommand(this)));
-
-        // 3. Settings (Impostazioni)
-        root.add(new MenuItem("SETTINGS", new OpenSettingsCommand(this)));
-
-        // 4. Exit (Esci)
-        root.add(new MenuItem("EXIT", new ExitGameCommand(this)));
+        // Associa ogni voce al relativo Comando
+        root.add(new MenuItem("NUOVA PARTITA", new NewGameCommand(this)));
+        root.add(new MenuItem("CARICA PARTITA", new LoadGameCommand(this)));
+        root.add(new MenuItem("IMPOSTAZIONI", new OpenSettingsCommand(this)));
+        root.add(new MenuItem("ESCI DAL GIOCO", new ExitGameCommand(this)));
 
         return root;
     }
 
-    // --- RECEIVER METHODS (Logica richiesta dai Command) ---
+    // --- RECEIVER METHODS (Eseguiti dai Comandi) ---
 
+    /**
+     * LOGICA NEW GAME (Richiesta Specifica):
+     * 1. Recupera il profilo corrente.
+     * 2. Crea una nuova sessione di gioco (livello 1, data, ecc.).
+     * 3. Salva immediatamente il file su disco in un nuovo slot.
+     * 4. NON avvia la partita (rimane nel menu).
+     */
     public void newGame() {
-        System.out.println("Azione: NEW GAME selezionata.");
+        System.out.println("[CMD] Richiesta creazione nuovo salvataggio...");
 
-        // Logica: Resettiamo i dati dell'utente corrente ai valori iniziali
-        // (Utile se l'utente vuole ricominciare da zero con lo stesso account)
-        // Oppure semplicemente avviamo la scena di gioco.
+        // 1. Identifica l'utente corrente (Profilo caricato al login)
+        String currentProfile = game.getCurrentUser().getUsername();
 
-        // Esempio: Reset dati (opzionale)
-        // game.getCurrentUser().resetProgress();
+        // 2. FRESH INSTANCE (Prototype concettuale):
+        // Crea una nuova GameSession (qui nascono P1 e P2 a livello 1 con la data odierna)
+        GameSession initialSession = new GameSession();
 
-        startGameSession();
+        // 3. MEMENTO: Cattura lo stato iniziale (inclusa la data di creazione)
+        Memento snapshot = initialSession.save();
+
+        // 4. CARETAKER: Chiede al servizio di persistere il memento in un NUOVO slot
+        // Usa la Facade per accedere al SaveService
+        int newSlotId = game.getSystemFacade().getSaveService()
+            .createNewSaveSlot(snapshot, currentProfile);
+
+        if (newSlotId != -1) {
+            // Successo
+            String msg = "Nuova partita creata nello Slot " + newSlotId + ".\nVai su 'CARICA PARTITA' per giocare.";
+
+            // Dobbiamo fare un cast perché 'view' in BaseController è generica
+            if (view instanceof MainMenuScreen) {
+                ((MainMenuScreen) view).showMessage("SUCCESSO", msg);
+            }
+
+            System.out.println("[UI] " + msg);
+        } else {
+            // Errore
+            String errorMsg = "Errore durante la creazione del file.\nControlla i permessi o lo spazio su disco.";
+
+            if (view instanceof MainMenuScreen) {
+                ((MainMenuScreen) view).showMessage("ERRORE", errorMsg);
+            }
+
+            System.err.println("[UI] " + errorMsg);
+        }
+
+        // 5. Feedback visuale in console (o popup futuro)
+        System.out.println("[UI] Partita creata con successo nello Slot " + newSlotId + ".");
+        System.out.println("[UI] Ora puoi premere 'CARICA PARTITA' per giocare.");
     }
 
+
     public void loadGame() {
-        System.out.println("Azione: LOAD GAME selezionata.");
-
-        // Logica: Poiché abbiamo già caricato il Memento al Login,
-        // qui potremmo semplicemente confermare e avviare.
-        // In un sistema a slot multipli, qui apriremmo un sotto-menu "Scegli Slot".
-
-        startGameSession();
+        System.out.println("[CMD] Load Game Selezionato - Apro lista salvataggi");
+        // Cambio Controller -> LoadMenuController
+        game.changeController(new LoadGameController(game, authService));
     }
 
     public void goToSettings() {
-        System.out.println("Azione: SETTINGS selezionata.");
-        // Cambio controller verso le impostazioni
+        System.out.println("[CMD] Settings Selezionato");
         game.changeController(new SettingsController(game, authService));
     }
 
     public void exitGame() {
-        System.out.println("Azione: EXIT selezionata.");
-        Gdx.app.exit();
-    }
-
-    // Helper privato per avviare il gioco
-    private void startGameSession() {
-        System.out.println("Avvio della GameScreen...");
-        // Qui passerai al GameController vero e proprio
-        // game.changeController(new GameController(game, authService));
+        System.out.println("[CMD] Exit Selezionato -> Transizione a ExitState");
+        // Cambio stato per chiusura sicura (Pattern State)
+        game.changeAppState(new ExitState());
     }
 }

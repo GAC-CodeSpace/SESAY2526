@@ -10,6 +10,7 @@ public class RegisterController extends BaseController {
 
     public RegisterController(RpgGame game, AuthService authService) {
         super(game, authService);
+        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
     }
 
     @Override
@@ -35,6 +36,10 @@ public class RegisterController extends BaseController {
             // Dopo la registrazione, torniamo al Login per far caricare i dati
             backToLogin();
         } else {
+            String msg = "Profilo già esistente, riprova.";
+            if(view instanceof RegisterScreen){
+                ((RegisterScreen) view).showMessage("FALLIMENTO" , msg);
+            }
             System.out.println("Errore: Utente già esistente.");
             // Qui potresti notificare la view per mostrare un messaggio rosso
         }
