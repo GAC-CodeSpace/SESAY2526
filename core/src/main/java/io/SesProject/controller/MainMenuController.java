@@ -3,6 +3,7 @@ package io.SesProject.controller;
 
 import io.SesProject.RpgGame;
 import io.SesProject.controller.command.*;
+import io.SesProject.controller.enumsContainer.MenuSource;
 import io.SesProject.controller.state.ExitState;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.memento.Memento;
@@ -102,9 +103,11 @@ public class MainMenuController extends BaseController {
         game.changeController(new LoadGameController(game, authService));
     }
 
+
     public void goToSettings() {
-        System.out.println("[CMD] Settings Selezionato");
-        game.changeController(new SettingsController(game, authService));
+        System.out.println("[CMD] Settings Selezionato (da Main)");
+        // Passiamo la sorgente
+        game.changeController(new SettingsController(game, authService, MenuSource.MAIN_MENU));
     }
 
     public void logout(){

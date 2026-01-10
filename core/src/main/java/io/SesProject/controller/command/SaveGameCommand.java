@@ -1,4 +1,17 @@
 package io.SesProject.controller.command;
 
-public class SaveGameCommand {
+
+import io.SesProject.controller.PauseMenuController;
+
+public class SaveGameCommand implements Command {
+    private PauseMenuController receiver;
+
+    public SaveGameCommand(PauseMenuController receiver) {
+        this.receiver = receiver;
+    }
+
+    @Override
+    public void execute() {
+        receiver.saveGame();
+    }
 }

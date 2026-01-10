@@ -42,14 +42,14 @@ public class LoadGameScreen extends BaseMenuScreen {
                 // Testo del bottone: "Slot 1 - 2023-01-01 - Lvl 1"
                 String btnText = meta.toString();
                 TextButton slotBtn = new TextButton(btnText, skin);
-                /*
+
                 // Listener: Chiama loadSlot(id)
                 slotBtn.addListener(new ChangeListener() {
                     @Override
                     public void changed(ChangeEvent event, Actor actor) {
                         controller.loadSlot(meta.getSlotId());
                     }
-                });*/
+                });
 
                 listTable.add(slotBtn).width(400).height(50).padBottom(10).row();
             }
