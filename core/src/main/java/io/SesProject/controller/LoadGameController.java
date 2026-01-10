@@ -3,7 +3,9 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
+import io.SesProject.model.GameSession;
 import io.SesProject.model.SaveMetadata;
+import io.SesProject.model.memento.Memento;
 import io.SesProject.service.AuthService;
 import io.SesProject.service.SaveService;
 import io.SesProject.view.BaseMenuScreen;
@@ -34,33 +36,43 @@ public class LoadGameController extends BaseController {
     }
 
     /**
-     * AZIONE: L'utente ha cliccato su uno slot specifico.
-     * Carica la partita e avvia il gioco.
-
+     * AZIONE: Click su un bottone di salvataggio.
+     * Carica il Memento, ripristina la Sessione e avvia il Gioco.
+     */
     public void loadSlot(int slotId) {
         System.out.println("[CMD] Caricamento Slot " + slotId + "...");
+
+        // 1. Recupera il nome utente dal contesto (Model Identity)
         String username = game.getCurrentUser().getUsername();
 
-        // 1. Carica il Memento dal disco (Caretaker)
-        Memento memento = saveService.loadGame(username, slotId);
+        // 2. CARETAKER: Chiede al Service di caricare il Memento dal disco
+        // Usa la Facade per accedere al servizio
+        Memento memento = game.getSystemFacade().getSaveService().loadGame(username, slotId);
 
         if (memento != null) {
-            // 2. Crea una sessione vuota (Originator)
+            System.out.println("[SYSTEM] Memento caricato. Ripristino stato...");
+
+            // 3. ORIGINATOR: Crea una sessione vuota
             GameSession session = new GameSession();
 
-            // 3. Ripristina lo stato (Restore)
+            // 4. RESTORE: Idrata la sessione con i dati del Memento
             session.restore(memento);
 
-            // 4. Imposta la sessione nel contesto del gioco
+            // 5. Aggiorna il contesto globale del gioco
             game.setCurrentSession(session);
 
-            // 5. Avvia il gioco (Factory Method -> GameController)
-            System.out.println("[SYSTEM] Partita avviata con successo!");
+            // 6. Transizione al GameController (Schermata Nera)
+            System.out.println("[SYSTEM] Avvio GameController...");
             game.changeController(new GameController(game, authService));
+
         } else {
-            System.err.println("[ERROR] Impossibile caricare il salvataggio.");
+            System.err.println("[ERROR] Impossibile caricare il file (Memento nullo).");
+            // Qui potresti mostrare un popup di errore sulla view
+            if (view instanceof io.SesProject.view.BaseMenuScreen) {
+                ((io.SesProject.view.BaseMenuScreen)view).showMessage("ERRORE", "File di salvataggio corrotto o mancante.");
+            }
         }
-    }*/
+    }
 
     public void backToMain() {
         game.changeController(new MainMenuController(game, authService));

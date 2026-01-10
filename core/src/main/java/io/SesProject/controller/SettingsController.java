@@ -2,6 +2,7 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
+import io.SesProject.controller.enumsContainer.MenuSource;
 import io.SesProject.model.SettingsService;
 import io.SesProject.service.AuthService;
 import io.SesProject.view.BaseMenuScreen;
@@ -9,11 +10,13 @@ import io.SesProject.view.SettingsScreen;
 
 public class SettingsController extends BaseController {
 
+    private MenuSource source;
     private SettingsService settingsService;
 
-    public SettingsController(RpgGame game, AuthService authService) {
+    public SettingsController(RpgGame game, AuthService authService, MenuSource source) {
         super(game, authService);
-        this.settingsService = game.getSettingsService();
+        this.settingsService = game.getSystemFacade().getSettingsService();
+        this.source = source;
     }
 
     @Override
@@ -41,9 +44,21 @@ public class SettingsController extends BaseController {
         }
     }
 
-    public void backToMain() {
-        // Torna al Main Menu usando il controller esistente
-        game.changeController(new MainMenuController(game, authService));
+    public void back() {
+        System.out.println("[NAV] Torna indietro verso: " + source);
+
+        switch (source) {
+            case MAIN_MENU:
+                // Torna al Menu Principale
+                game.changeController(new MainMenuController(game, authService));
+                break;
+
+            case PAUSE_MENU:
+                // Torna al Menu di Pausa
+                // Nota: La musica non cambia (rimane quella del gioco o del menu precedente)
+                game.changeController(new PauseMenuController(game, authService));
+                break;
+        }
     }
 
     // Getter per inizializzare la UI con i valori correnti
