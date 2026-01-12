@@ -56,4 +56,11 @@ public class GameSession {
     // Getters
     public String getCreationDate() { return creationDate; }
 
+    public PlayerCharacter getP1() {
+        return this.p1;
+    }
+
+    public PlayerCharacter getP2() {
+        return this.p2;
+    }
 }

@@ -54,5 +54,14 @@ public class PlayerCharacter {
     public String getName() { return name; }
     public int getLevel() { return level; }
     public void setPosition(float x, float y) { this.x = x; this.y = y; }
-    // ... altri metodi
+
+    public float getX() {
+        return this.x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+
 }
