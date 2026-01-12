@@ -1,5 +1,6 @@
 package io.SesProject.model.observer;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Graphics;
 import io.SesProject.service.AudioManager;
 
 /**
@@ -28,12 +29,16 @@ public class SettingsHandler implements SettingsObserver {
             audioManager.setMasterVolume(volume);
         }
     }
-
+    //TODO: Rivedere il metodo seguente per settare il fullscreen(attualmente non funziona);
     @Override
     public void onResolutionChanged(int width, int height) {
         System.out.println("[SYSTEM] Update Resolution: " + width + "x" + height);
         if (Gdx.graphics.supportsDisplayModeChange()) {
+            if(width == 1920 && height == 1080){
+                Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode(Gdx.graphics.getMonitor()));
+            }
             Gdx.graphics.setWindowedMode(width, height);
         }
+
     }
 }
