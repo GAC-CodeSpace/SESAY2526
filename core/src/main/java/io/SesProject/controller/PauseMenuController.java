@@ -7,6 +7,7 @@ import io.SesProject.controller.command.QuitToMainCommand;
 import io.SesProject.controller.command.ResumeGameCommand;
 import io.SesProject.controller.command.SaveGameCommand;
 import io.SesProject.controller.enumsContainer.MenuSource;
+import io.SesProject.controller.state.PlayState;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.menu.MenuComponent;
 import io.SesProject.model.menu.MenuComposite;
@@ -45,7 +46,7 @@ public class PauseMenuController extends BaseController {
         System.out.println("[CMD] Riprendi Gioco");
         // Torna al GameController. Dato che la sessione è in game.currentSession,
         // il GameController ripartirà da dove eravamo.
-        game.changeController(new GameController(game, authService));
+        game.changeAppState(new PlayState());
     }
 
     public void saveGame() {
@@ -54,10 +55,8 @@ public class PauseMenuController extends BaseController {
         GameSession session = game.getCurrentSession();
         String username = game.getCurrentUser().getUsername();
 
-        // 1. Recuperiamo lo slot ID che avevamo assegnato al caricamento/creazione
-        // (Assumiamo che tu abbia aggiunto getSaveSlotId() in GameSession o User come discusso in precedenza)
-        // Per ora, simuliamo salvataggio su uno slot fisso o calcolato se non implementato nel model
-        int slotId = 1; // TODO: Recuperare session.getSlotId();
+
+        int slotId = 1;
 
         // 2. Creiamo il Memento
         Memento snapshot = session.save();

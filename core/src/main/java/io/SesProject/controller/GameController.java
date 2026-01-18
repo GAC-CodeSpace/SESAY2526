@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input;
 import io.SesProject.RpgGame;
 import io.SesProject.controller.game.controllerInputStrategy.InputStrategy;
 import io.SesProject.controller.game.controllerInputStrategy.KeyboardInputStrategy;
+import io.SesProject.controller.state.PausedState;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.game.PlayerEntity;
 import io.SesProject.service.AuthService;
@@ -69,8 +70,10 @@ public class GameController extends BaseController {
 
     private void handleSystemInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            game.changeController(new PauseMenuController(game, authService));
+            game.changeAppState(new PausedState());
         }
+
+
     }
 
     public List<PlayerEntity> getPlayers() {
