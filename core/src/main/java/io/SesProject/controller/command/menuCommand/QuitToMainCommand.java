@@ -1,5 +1,6 @@
-package io.SesProject.controller.command;
+package io.SesProject.controller.command.menuCommand;
 import io.SesProject.controller.PauseMenuController;
+import io.SesProject.controller.command.Command;
 
 public class QuitToMainCommand implements Command {
     private PauseMenuController receiver;

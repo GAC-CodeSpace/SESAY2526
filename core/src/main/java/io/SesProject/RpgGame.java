@@ -6,6 +6,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import io.SesProject.controller.BaseController;
+import io.SesProject.controller.GameController;
 import io.SesProject.controller.state.GameState;
 import io.SesProject.controller.state.InitState;
 import io.SesProject.model.GameSession;
@@ -32,6 +33,7 @@ public class RpgGame extends Game {
     // --- DATA CONTEXT (Stato del Gioco) ---
     private User currentUser;          // Il Profilo (es. "Mario") -> Cartella
     private GameSession currentSession; // La Partita (HP, LVL, Mappa) -> File specifico
+    private GameController activeGameController;
 
     @Override
     public void create() {
@@ -87,6 +89,14 @@ public class RpgGame extends Game {
             System.out.println("[GAME CONTEXT] Logout profilo.");
             this.currentSession = null; // Se esce il profilo, chiudo la sessione
         }
+    }
+
+    public void setActiveGameController(GameController controller) {
+        this.activeGameController = controller;
+    }
+
+    public GameController getActiveGameController() {
+        return activeGameController;
     }
 
     public User getCurrentUser() {

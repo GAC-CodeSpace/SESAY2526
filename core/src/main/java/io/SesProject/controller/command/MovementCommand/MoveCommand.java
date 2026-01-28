@@ -1,5 +1,6 @@
-package io.SesProject.controller.command;
+package io.SesProject.controller.command.MovementCommand;
 
+import io.SesProject.controller.command.Command;
 import io.SesProject.model.game.GameObject;
 
 public class MoveCommand implements Command {

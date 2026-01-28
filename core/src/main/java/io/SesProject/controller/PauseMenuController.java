@@ -2,10 +2,10 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
-import io.SesProject.controller.command.OpenSettingsCommand;
-import io.SesProject.controller.command.QuitToMainCommand;
-import io.SesProject.controller.command.ResumeGameCommand;
-import io.SesProject.controller.command.SaveGameCommand;
+import io.SesProject.controller.command.menuCommand.OpenSettingsCommand;
+import io.SesProject.controller.command.menuCommand.QuitToMainCommand;
+import io.SesProject.controller.command.menuCommand.ResumeGameCommand;
+import io.SesProject.controller.command.menuCommand.SaveGameCommand;
 import io.SesProject.controller.enumsContainer.MenuSource;
 import io.SesProject.controller.state.PlayState;
 import io.SesProject.model.GameSession;
@@ -72,10 +72,13 @@ public class PauseMenuController extends BaseController {
     public void quitToMain() {
         System.out.println("[CMD] Uscita al Menu Principale");
 
-        // Chiudiamo la sessione attiva
+        // 1. Chiudi sessione
         game.setCurrentSession(null);
 
-        // Cambiamo controller
+        // 2. CORREZIONE: Distruggi il controller attivo
+        game.setActiveGameController(null);
+
+        // 3. Torna al menu
         game.changeController(new MainMenuController(game, authService));
     }
 

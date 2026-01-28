@@ -63,5 +63,11 @@ public class PlayerCharacter {
         return y;
     }
 
+    public int getMaxHp() {
+        return this.maxHp;
+    }
 
+    public String getArchetype() {
+        return this.archetype;
+    }
 }
