@@ -32,6 +32,7 @@ public class SaveService {
         json.addClassTag("session", GameSessionMemento.class);
         // Quando vede "character", crea un PlayerCharacterMemento
         json.addClassTag("character", PlayerCharacterMemento.class);
+        json.addClassTag("npc", io.SesProject.model.memento.NpcMemento.class);
 
         // Assicuriamoci che la cartella root esista (sicurezza)
         if (!Gdx.files.local(ROOT_DIR).exists()) {

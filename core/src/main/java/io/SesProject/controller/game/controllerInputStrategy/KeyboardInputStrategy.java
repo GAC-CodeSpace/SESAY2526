@@ -2,7 +2,7 @@ package io.SesProject.controller.game.controllerInputStrategy;
 
 import com.badlogic.gdx.Gdx;
 import io.SesProject.controller.command.Command;
-import io.SesProject.controller.command.MoveCommand;
+import io.SesProject.controller.command.MovementCommand.MoveCommand;
 import io.SesProject.model.game.GameObject;
 
 public class KeyboardInputStrategy implements InputStrategy {

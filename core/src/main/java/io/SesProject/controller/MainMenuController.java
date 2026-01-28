@@ -2,7 +2,7 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
-import io.SesProject.controller.command.*;
+import io.SesProject.controller.command.menuCommand.*;
 import io.SesProject.controller.enumsContainer.MenuSource;
 import io.SesProject.controller.state.ExitState;
 import io.SesProject.model.GameSession;
