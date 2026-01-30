@@ -49,7 +49,7 @@ public class GameScreen extends BaseMenuScreen {
             for (GameObject obj : controller.getWorldEntities()) {
 
                 // Logica Colore: Distinguiamo Player da NPC
-                if (obj instanceof io.SesProject.model.game.PlayerEntity) {
+                if (obj instanceof PlayerEntity) {
                     if(((PlayerEntity) obj).getName().equals("Giocatore 1")){
                         shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.BLUE);
                     }

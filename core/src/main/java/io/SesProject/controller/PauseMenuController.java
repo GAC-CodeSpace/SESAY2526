@@ -2,10 +2,8 @@ package io.SesProject.controller;
 
 
 import io.SesProject.RpgGame;
-import io.SesProject.controller.command.menuCommand.OpenSettingsCommand;
-import io.SesProject.controller.command.menuCommand.QuitToMainCommand;
-import io.SesProject.controller.command.menuCommand.ResumeGameCommand;
-import io.SesProject.controller.command.menuCommand.SaveGameCommand;
+import io.SesProject.controller.command.Command;
+import io.SesProject.controller.command.menuCommand.*;
 import io.SesProject.controller.enumsContainer.MenuSource;
 import io.SesProject.controller.state.PlayState;
 import io.SesProject.model.GameSession;
@@ -34,6 +32,7 @@ public class PauseMenuController extends BaseController {
 
         root.add(new MenuItem("RIPRENDI", new ResumeGameCommand(this)));
         root.add(new MenuItem("SALVA PARTITA", new SaveGameCommand(this)));
+        root.add(new MenuItem("INVENTARIO" , new OpenInventoryCommand(this)));
         root.add(new MenuItem("IMPOSTAZIONI" , new OpenSettingsCommand(this)));
         root.add(new MenuItem("ESCI AL MENU", new QuitToMainCommand(this)));
 
@@ -87,4 +86,6 @@ public class PauseMenuController extends BaseController {
         // Passiamo la sorgente PAUSE_MENU
         game.changeController(new SettingsController(game, authService, MenuSource.PAUSE_MENU));
     }
+
+    public void openInventory() { game.changeController(new InventoryController(game, authService)); }
 }

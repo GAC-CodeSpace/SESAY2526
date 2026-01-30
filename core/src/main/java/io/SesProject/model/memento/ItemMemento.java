@@ -1,0 +1,18 @@
+package io.SesProject.model.memento;
+
+public class ItemMemento {
+    public String name;
+    public String description;
+    public String type; // Salviamo l'Enum come String (WEAPON, ARMOR, SKILL)
+    public int value;
+
+    // Costruttore vuoto per JSON
+    public ItemMemento() {}
+
+    public ItemMemento(String name, String description, String type, int value) {
+        this.name = name;
+        this.description = description;
+        this.type = type;
+        this.value = value;
+    }
+}

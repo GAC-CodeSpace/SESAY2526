@@ -9,7 +9,7 @@ package io.SesProject.model;
 public class SaveMetadata {
     private int slotId;
     private String date;
-    private String details; // Es. "Livello 5" (Opzionale)
+    private String details; // Es. "Livello 5"
 
     public SaveMetadata(int slotId, String date, String details) {
         this.slotId = slotId;
