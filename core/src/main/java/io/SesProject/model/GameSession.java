@@ -31,10 +31,18 @@ public class GameSession {
     private List<NpcData> worldNpcs;
 
     public GameSession() {
-        // ... init p1, p2, date ...
+        // Inizializza la lista NPC
         this.worldNpcs = new ArrayList<>();
-    }
 
+        // Imposta la data
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        this.creationDate = LocalDateTime.now().format(dtf);
+
+        // --- FIX FONDAMENTALE: INIZIALIZZA I GIOCATORI ---
+        // Se queste righe mancano, p1 e p2 restano null -> Crash al salvataggio
+        this.p1 = new PlayerCharacter("Giocatore 1", "Warrior");
+        this.p2 = new PlayerCharacter("Giocatore 2", "Mage");
+    }
     // --- SAVE ---
     public Memento save() {
         GameSessionMemento m = new GameSessionMemento();

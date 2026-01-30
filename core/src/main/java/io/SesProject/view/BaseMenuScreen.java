@@ -7,18 +7,23 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 public abstract class BaseMenuScreen implements Screen {
     protected Stage stage;
     protected Table rootTable;
     protected Skin skin;
 
-    public BaseMenuScreen() {
-        this.stage = new Stage(new ScreenViewport());
-        // Assicurati di avere uiskin.json/atlas/png nella cartella assets!
-        this.skin = new Skin(Gdx.files.internal("uiskin.json"));
+    private static final int VIRTUAL_WIDTH = 1280;
+    private static final int VIRTUAL_HEIGHT = 720;
 
+    public BaseMenuScreen() {
+        Viewport viewport = new FitViewport(VIRTUAL_WIDTH, VIRTUAL_HEIGHT);
+        this.stage = new Stage(viewport);
+
+        this.skin = new Skin(Gdx.files.internal("uiskin.json"));
         this.rootTable = new Table();
         rootTable.setFillParent(true);
         stage.addActor(rootTable);

@@ -6,9 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
 import io.SesProject.model.SaveMetadata;
-import io.SesProject.model.memento.Memento;
-import io.SesProject.model.memento.GameSessionMemento;
-import io.SesProject.model.memento.PlayerCharacterMemento;
+import io.SesProject.model.memento.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -32,7 +30,8 @@ public class SaveService {
         json.addClassTag("session", GameSessionMemento.class);
         // Quando vede "character", crea un PlayerCharacterMemento
         json.addClassTag("character", PlayerCharacterMemento.class);
-        json.addClassTag("npc", io.SesProject.model.memento.NpcMemento.class);
+        json.addClassTag("npc", NpcMemento.class);
+        json.addClassTag("item", ItemMemento.class);
 
         // Assicuriamoci che la cartella root esista (sicurezza)
         if (!Gdx.files.local(ROOT_DIR).exists()) {
