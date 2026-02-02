@@ -28,7 +28,7 @@ public class BossFactory extends NpcFactory {
         EnemyTemplate template = Bestiary.getBossForLevel(levelId);
 
         // 2. Costruisce usando la ricetta del Boss
-        director.constructBossFromTemplate(builder, x, y, template);
+        director.constructEnemyFromTemplate(builder, x, y, template);
 
         NpcData data = builder.getResult();
 

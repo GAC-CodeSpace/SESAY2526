@@ -2,6 +2,7 @@ package io.SesProject.service;
 
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
@@ -70,13 +71,13 @@ public class AudioManager implements Disposable {
     /**
      * Riproduce un effetto sonoro "usa e getta".
      */
-    public void playSound(String filePath) {
-        FileHandle file = Gdx.files.internal(filePath);
-        if (file.exists()) {
-            Sound sound = Gdx.audio.newSound(file);
-            // Suona con il volume master e poi si autodistrugge dalla memoria (gestito da GDX)
-            long id = sound.play(masterVolume);
-            // Nota: per i Sound in produzione servirebbe un AssetManager per non caricarli ogni volta
+    public void playSound(String filePath, AssetManager assetManager) {
+        if (assetManager.isLoaded(filePath)) {
+            Sound sound = assetManager.get(filePath, Sound.class);
+            // Riproduce il suono con il volume corrente
+            sound.play(masterVolume + 0.5f);
+        } else {
+            System.err.println("[AUDIO] SFX non caricato: " + filePath);
         }
     }
 

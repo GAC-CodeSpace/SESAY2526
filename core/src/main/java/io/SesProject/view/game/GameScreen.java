@@ -1,82 +1,69 @@
 package io.SesProject.view.game;
 
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import io.SesProject.controller.GameController;
 import io.SesProject.model.game.GameObject;
-import io.SesProject.view.BaseMenuScreen;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.Color;
 import io.SesProject.model.game.PlayerEntity;
-
+import io.SesProject.model.game.npc.factory.NpcEntity;
+import io.SesProject.model.game.visualState.VisualState;
+import io.SesProject.view.BaseMenuScreen;
+import io.SesProject.view.game.flyweightFactory.SpriteFlyweightFactory;
 
 public class GameScreen extends BaseMenuScreen {
 
     private GameController controller;
-    private ShapeRenderer shapeRenderer; // Per disegnare rettangoli di debug
+    private SpriteFlyweightFactory spriteFactory; // La nostra factory grafica
 
     public GameScreen(GameController controller) {
         super();
         this.controller = controller;
-        this.shapeRenderer = new ShapeRenderer();
-
-        // La UI qui è minima (solo HUD eventualmente), il resto è rendering di gioco
+        // Inizializza la factory passandogli la facade
+        this.spriteFactory = new SpriteFlyweightFactory(controller.getGame().getSystemFacade());
         buildUI();
     }
 
     @Override
     protected void buildUI() {
-        // Eventuale HUD o Label di pausa
+
     }
 
     @Override
     public void render(float delta) {
-        super.render(delta); // Pulisce lo schermo (metodo padre)
+        super.render(delta);
 
-        // 1. Aggiornamento Logica (Input + Movimento)
         if (controller != null) {
             controller.update(delta);
-        }
 
-        // 2. Rendering Gioco (Mondo)
-        if (controller != null) {
-            // Imposta la camera
-            shapeRenderer.setProjectionMatrix(stage.getViewport().getCamera().combined);
+            stage.getBatch().begin();
 
-            // INIZIO DISEGNO
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-            // Iteriamo su TUTTE le entità (Player + NPC)
             for (GameObject obj : controller.getWorldEntities()) {
+                // 1. Recupera stato e dati dal Model
+                VisualState state = obj.getVisualState();
+                float stateTime = obj.getStateTime();
 
-                // Logica Colore: Distinguiamo Player da NPC
-                if (obj instanceof PlayerEntity) {
-                    if(((PlayerEntity) obj).getName().equals("Giocatore 1")){
-                        shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.BLUE);
-                    }
-                    else{
-                        shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.RED);
-                    }
+                // --- CORREZIONE: Usa il metodo polimorfico ---
+                // Non servono più 'if instanceof' per il nome dello sprite
+                String spriteName = obj.getSpriteName();
 
+                // 2. Usa il Flyweight per ottenere l'animazione corretta
+                Animation<TextureRegion> anim = spriteFactory.getAnimation(spriteName, state);
+
+                if (anim != null) {
+                    // 3. Ottieni il frame e disegna
+                    TextureRegion currentFrame = anim.getKeyFrame(stateTime, true);
+                    stage.getBatch().draw(currentFrame, obj.getX(), obj.getY());
                 } else {
-                    // È un NPC o altro oggetto
-                    shapeRenderer.setColor(com.badlogic.gdx.graphics.Color.GREEN);
+                    // Debug per capire perché non trova l'animazione
+                    Gdx.app.error("GameScreen", "Animazione non trovata per: " + spriteName + " con stato " + state);
                 }
-
-                // Disegna il rettangolo
-                shapeRenderer.rect(obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
             }
-
-            // FINE DISEGNO
-            shapeRenderer.end();
+            stage.getBatch().end();
         }
-
-        // 3. Rendering UI (Stage) sopra il gioco (Pausa, HUD, ecc.)
         stage.draw();
-    }
-
-    @Override
-    public void dispose() {
-        super.dispose();
-        if (shapeRenderer != null) shapeRenderer.dispose();
     }
 }

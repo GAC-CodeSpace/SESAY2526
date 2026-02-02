@@ -15,14 +15,28 @@ public class VillageNpcFactory extends NpcFactory{
 
     @Override
     public NpcEntity createNpc(float x, float y) {
-        String[] names = {"Oste", "Mercante", "Anziano"};
-        String name = names[rand.nextInt(names.length)];
+        return createVillager(x, y); // Default
+    }
 
-        // 1. Costruisci i dati complessi (Builder)
-        director.constructVillager(builder, x, y, name);
+    /**
+     * NUOVO METODO SPECIFICO: Crea sempre un Villico.
+     */
+    public NpcEntity createVillager(float x, float y) {
+        // Usa la ricetta del Director per il Villico
+        director.constructVillager(builder, x, y);
+
         NpcData data = builder.getResult();
+        return new FriendlyNpc(data);
+    }
 
-        // 2. Ritorna l'entità specifica (Factory Method)
+    /**
+     * NUOVO METODO SPECIFICO: Crea sempre un Mercante.
+     */
+    public NpcEntity createMerchant(float x, float y) {
+        // Usa la ricetta del Director per il Mercante
+        director.constructMerchant(builder, x, y);
+
+        NpcData data = builder.getResult();
         return new FriendlyNpc(data);
     }
 }

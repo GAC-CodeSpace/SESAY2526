@@ -26,4 +26,6 @@ public abstract class BaseController {
         }
         game.setScreen(view);
     }
+
+    public RpgGame getGame(){return  this.game;}
 }

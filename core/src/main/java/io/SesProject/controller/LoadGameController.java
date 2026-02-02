@@ -8,6 +8,7 @@ import io.SesProject.model.SaveMetadata;
 import io.SesProject.model.memento.Memento;
 import io.SesProject.service.AuthService;
 import io.SesProject.service.SaveService;
+import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.LoadGameScreen;
 
@@ -41,6 +42,10 @@ public class LoadGameController extends BaseController {
      */
     public void loadSlot(int slotId) {
         System.out.println("[CMD] Caricamento Slot " + slotId + "...");
+
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
 
         // 1. Recupera il nome utente dal contesto (Model Identity)
         String username = game.getCurrentUser().getUsername();

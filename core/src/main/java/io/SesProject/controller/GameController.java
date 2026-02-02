@@ -99,10 +99,13 @@ public class GameController extends BaseController {
 
             List<NpcEntity> generatedNpcs = new ArrayList<>();
 
-            // Factory Villaggio
-            NpcFactory villageFactory = new VillageNpcFactory();
-            generatedNpcs.add(villageFactory.createNpc(200, 300));
-            generatedNpcs.add(villageFactory.createNpc(350, 300));
+            VillageNpcFactory villageFactory = new VillageNpcFactory();
+
+            // 1. CREAZIONE ESPLICITA: Piazza un Villico a coordinate (200, 300)
+            generatedNpcs.add(villageFactory.createVillager(200, 300));
+
+            // 2. CREAZIONE ESPLICITA: Piazza un Mercante a coordinate (350, 300)
+            generatedNpcs.add(villageFactory.createMerchant(350, 300));
 
             // Factory Dungeon
             NpcFactory dungeonFactory = new DungeonEnemyFactory(1);
@@ -209,5 +212,8 @@ public class GameController extends BaseController {
     // Getter per la View
     public List<GameObject> getWorldEntities() {
         return worldEntities;
+    }
+    public RpgGame getGame(){
+        return this.game;
     }
 }

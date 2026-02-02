@@ -5,6 +5,7 @@ import io.SesProject.RpgGame;
 import io.SesProject.controller.enumsContainer.MenuSource;
 import io.SesProject.model.SettingsService;
 import io.SesProject.service.AuthService;
+import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.SettingsScreen;
 
@@ -50,12 +51,18 @@ public class SettingsController extends BaseController {
         switch (source) {
             case MAIN_MENU:
                 // Torna al Menu Principale
+                SystemFacade facade = game.getSystemFacade();
+
+                facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
                 game.changeController(new MainMenuController(game, authService));
                 break;
 
             case PAUSE_MENU:
                 // Torna al Menu di Pausa
                 // Nota: La musica non cambia (rimane quella del gioco o del menu precedente)
+
+
+                game.getSystemFacade().getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , game.getSystemFacade().getAssetManager());
                 game.changeController(new PauseMenuController(game, authService));
                 break;
         }

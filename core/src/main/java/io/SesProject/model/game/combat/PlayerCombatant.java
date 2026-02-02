@@ -44,4 +44,10 @@ public class PlayerCombatant extends Combatant {
             this.skills.add(new Skill("Supernova", 6, dummyAttack));
         }
     }
+
+
+    @Override
+    public String getSpriteName() {
+        return this.sourceData.getArchetype();
+    }
 }
