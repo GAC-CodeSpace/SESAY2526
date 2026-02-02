@@ -1,5 +1,6 @@
 package io.SesProject.model.memento;
 
+/*memento del singolo item dell'inventario (sará incapsulato in PlayerCharacterMemento)*/
 public class ItemMemento {
     public String name;
     public String description;

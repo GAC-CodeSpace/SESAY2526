@@ -32,4 +32,18 @@ public class PlayerEntity extends GameObject {
     public String getName() {
         return data.getName();
     }
+
+    public String getArchetype() {
+       return this.data.getArchetype();
+    }
+
+    public PlayerEntity getData() {
+        return this;
+    }
+
+    @Override
+    public String getSpriteName() {
+        // Restituisce l'archetipo (es. "warrior", "mage")
+        return data.getArchetype();
+    }
 }

@@ -11,6 +11,7 @@ import io.SesProject.model.menu.MenuComponent;
 import io.SesProject.model.menu.MenuComposite;
 import io.SesProject.model.menu.MenuItem;
 import io.SesProject.service.AuthService;
+import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.MainMenuScreen;
 
@@ -54,6 +55,9 @@ public class MainMenuController extends BaseController {
      */
     public void newGame() {
         System.out.println("[CMD] Richiesta creazione nuovo salvataggio...");
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
 
         // 1. Identifica l'utente corrente (Profilo caricato al login)
         String currentProfile = game.getCurrentUser().getUsername();
@@ -99,6 +103,10 @@ public class MainMenuController extends BaseController {
 
     public void loadGame() {
         System.out.println("[CMD] Load Game Selezionato - Apro lista salvataggi");
+
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         // Cambio Controller -> LoadMenuController
         game.changeController(new LoadGameController(game, authService));
     }
@@ -106,17 +114,27 @@ public class MainMenuController extends BaseController {
 
     public void goToSettings() {
         System.out.println("[CMD] Settings Selezionato (da Main)");
+
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         // Passiamo la sorgente
         game.changeController(new SettingsController(game, authService, MenuSource.MAIN_MENU));
     }
 
     public void logout(){
         System.out.println("[CMD] vado al login");
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         game.changeController(new LoginController(game , authService));
     }
 
     public void exitGame() {
         System.out.println("[CMD] Exit Selezionato -> Transizione a ExitState");
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         // Cambio stato per chiusura sicura (Pattern State)
         game.changeAppState(new ExitState());
     }

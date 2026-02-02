@@ -6,48 +6,48 @@ import io.SesProject.model.game.movementStrategy.StaticStrategy;
 import io.SesProject.model.game.npc.EnemyTemplate;
 
 /*DIRECTOR OF BUILDER PATTERN*/
+
 public class NpcDirector {
-    // --NPC AMICHEVOLE--
-    public void constructVillager(NpcBuilder builder, float x, float y, String name) {
+
+    // --- NPC AMICHEVOLI ---
+
+    // Ricetta 1: Villico Comune
+    public void constructVillager(NpcBuilder builder, float x, float y) {
         builder.reset();
-        builder.buildIdentity(name, "villager_sprite");
+        builder.buildIdentity("Villico", "villager"); // Sprite generico
         builder.buildPosition(x, y);
         builder.buildCombatStats(false, 10);
-        builder.buildInteraction("Salve viaggiatore! Benvenuto al villaggio.");
+        builder.buildInteraction("Bella giornata per una passeggiata, vero?");
         builder.buildBehavior(new StaticStrategy());
     }
 
-    // Metodo generico per la generico per la generazione di nemici generici basati sulla classe template
+    // Ricetta 2: Mercante (NUOVO)
+    public void constructMerchant(NpcBuilder builder, float x, float y) {
+        builder.reset();
+        builder.buildIdentity("Mercante", "merchant"); // Sprite specifico
+        builder.buildPosition(x, y);
+        builder.buildCombatStats(false, 100); // I mercanti sono robusti!
+        builder.buildInteraction("Ho le migliori merci del regno!");
+        builder.buildBehavior(new StaticStrategy());
+    }
+
+    // --- NEMICI (Generic Template Based) ---
+
+    // Usato sia per Scheletri (Minion) che per Scheletro Gigante (Boss)
+    // poiché passiamo il template dal Bestiario
     public void constructEnemyFromTemplate(NpcBuilder builder, float x, float y, EnemyTemplate template) {
         builder.reset();
-
-        // Usa i dati del template
         builder.buildIdentity(template.name, template.spriteName);
-        builder.buildCombatStats(true, template.maxHp);
-
-        // Usa i dati di posizione passati
-        builder.buildPosition(x, y);
-
-        // Configurazioni standard per nemici
-        builder.buildInteraction(null); // Non parlano
-
-        // Strategia di movimento (potrebbe essere passata nel template in futuro)
-        builder.buildBehavior(new InputMovementStrategy());
-    }
-
-    // Costruzione BOSS (Da Template)
-    public void constructBossFromTemplate(NpcBuilder builder, float x, float y, EnemyTemplate template) {
-        builder.reset();
-        builder.buildIdentity(template.name, template.spriteName);
-
-        // I boss sono ostili e usano gli HP del template
         builder.buildCombatStats(true, template.maxHp);
         builder.buildPosition(x, y);
 
-        // Aggiungiamo un dialogo generico di sfida (o potremmo metterlo nel template)
-        builder.buildInteraction("Sono il " + template.name + "! Preparati a perire!");
-
-        // I Boss stanno fermi ad aspettare il giocatore (StaticStrategy)
-        builder.buildBehavior(new StaticStrategy());
+        // Distinzione dialogo Boss vs Minion (basata sul nome o HP)
+        if (template.name.contains("Gigante")) {
+            builder.buildInteraction("CRAAASH! (Rumore di ossa giganti che si muovono)");
+            builder.buildBehavior(new StaticStrategy()); // Boss fermo
+        } else {
+            builder.buildInteraction(null); // Minion muti
+            builder.buildBehavior(new InputMovementStrategy()); // Minion si muovono
+        }
     }
 }

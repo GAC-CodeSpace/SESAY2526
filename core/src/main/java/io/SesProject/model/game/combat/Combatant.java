@@ -68,7 +68,7 @@ public abstract class Combatant {
         }
     }
 
-
+    public abstract String getSpriteName();
     public String getName() { return name; }
     public int getCurrentHp() { return currentHp; }
     public int getMaxHp() { return maxHp; }

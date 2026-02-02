@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import io.SesProject.RpgGame;
 
 public abstract class BaseMenuScreen implements Screen {
     protected Stage stage;
@@ -73,4 +74,7 @@ public abstract class BaseMenuScreen implements Screen {
     @Override public void pause() {}
     @Override public void resume() {}
     @Override public void hide() {}
+
+
+
 }

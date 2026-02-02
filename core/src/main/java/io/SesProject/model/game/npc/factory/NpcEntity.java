@@ -31,4 +31,10 @@ public abstract class NpcEntity extends GameObject {
     public NpcData getData() {
         return this.data;
     }
+
+    @Override
+    public String getSpriteName() {
+        // Restituisce il nome dello sprite impostato dal Builder
+        return data.getSpriteName();
+    }
 }

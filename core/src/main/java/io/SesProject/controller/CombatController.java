@@ -19,6 +19,7 @@ import io.SesProject.model.menu.MenuComponent;
 import io.SesProject.model.menu.MenuComposite;
 import io.SesProject.model.menu.MenuItem;
 import io.SesProject.service.AuthService;
+import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.game.combat.CombatScreen;
 
@@ -159,10 +160,21 @@ public class CombatController extends BaseController {
 
         System.out.println("[ACTION] " + currentActor.getName() + " usa " + skill.getName());
 
-        // Target: Per ora sempre il primo nemico (semplificazione)
+        // --- INTEGRAZIONE AUDIO ---
+        // Recuperiamo la facade e suoniamo l'effetto
+        // Nota: Assicurati che "sounds/attack.wav" sia stato caricato in SystemFacade.initializeSystems()
+        SystemFacade facade = game.getSystemFacade();
+
+        // Qui potresti anche scegliere suoni diversi in base al nome della skill
+        // es. if(skill.getName().contains("Fuoco")) playSound("fire.wav")...
+        // Per ora usiamo un suono generico di attacco.
+        facade.getAudioManager().playSound("music/sfx/battle/03_Claw_03.wav", facade.getAssetManager());
+        // --------------------------
+
+        // Target: Primo nemico (Logica semplificata)
         Combatant target = enemies.get(0);
 
-        // Esecuzione effetto
+        // Esecuzione effetto (Model Strategy)
         skill.use(currentActor, target);
 
         // Controllo vittoria
@@ -171,17 +183,20 @@ public class CombatController extends BaseController {
         }
     }
 
-
-
-
     // --- AI NEMICA ---
 
     private void simulateEnemyTurn() {
-        // Sceglie un bersaglio vivo a caso tra gli eroi
         Combatant target = heroes.get(0).getCurrentHp() > 0 ? heroes.get(0) : heroes.get(1);
 
         System.out.println("[AI] " + currentActor.getName() + " attacca " + target.getName());
-        target.takeDamage(10); // Danno base nemico
+
+        // --- AUDIO PER NEMICO ---
+        // Anche il nemico fa rumore quando attacca
+        SystemFacade facade = game.getSystemFacade();
+        facade.getAudioManager().playSound("music/sfx/battle/03_Claw_03.wav", facade.getAssetManager());
+        // ------------------------------------
+
+        target.takeDamage(10);
 
         if (!checkLoseCondition()) {
             nextTurn();
@@ -228,6 +243,7 @@ public class CombatController extends BaseController {
     public Combatant getCurrentActor() { return currentActor; }
     public List<Combatant> getHeroes() { return heroes; }
     public List<Combatant> getEnemies() { return enemies; }
+   // public RpgGame getGame() {return this.game;}
 
     // Helper per la UI: abilita i bottoni solo se tocca a un umano
     public boolean isPlayerTurn() {
