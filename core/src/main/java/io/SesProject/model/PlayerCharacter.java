@@ -19,6 +19,7 @@ public class PlayerCharacter {
     private int hp;
     private int maxHp;
     private int baseMaxHp = 100;
+    private int karma;
     private int baseDamage = 5;
 
     // Posizione (per esplorazione)
@@ -51,6 +52,7 @@ public class PlayerCharacter {
         this.observers = new ArrayList<>();
         this.maxHp = baseMaxHp;
         this.hp = maxHp;
+        this.karma = 10;
     }
 
     public void addObserver(PlayerStatsObserver observer) {
@@ -81,6 +83,7 @@ public class PlayerCharacter {
         m.maxHp = this.maxHp;
         m.x = this.x;
         m.y = this.y;
+        m.karma = this.karma;
 
         // Salvataggio Inventario
         for (Item item : this.inventory) {
@@ -114,6 +117,7 @@ public class PlayerCharacter {
         this.maxHp = m.maxHp;
         this.x = m.x;
         this.y = m.y;
+        this.karma = m.karma;
 
         // Ripristino Inventario
         this.inventory.clear();
@@ -187,6 +191,12 @@ public class PlayerCharacter {
         }
     }
 
+    public void modifyKarma(int amount) {
+        this.karma += amount;
+        System.out.println("[STATS] Karma di " + name + " aggiornato a: " + this.karma);
+        notifyObservers();
+    }
+
     private void recalculateStats() {
         int armorBonus = (equippedArmor != null) ? equippedArmor.getValue() : 0;
         this.maxHp = this.baseMaxHp + armorBonus;
@@ -217,4 +227,5 @@ public class PlayerCharacter {
     public float getY() { return y; }
     public void setPosition(float x, float y) { this.x = x; this.y = y; }
     public String getArchetype() { return archetype; }
+    public int getKarma() { return karma; }
 }

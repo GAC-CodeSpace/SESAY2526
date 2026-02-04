@@ -2,6 +2,7 @@ package io.SesProject.model.game.npc.factory;
 
 import io.SesProject.RpgGame;
 import io.SesProject.model.game.GameObject;
+import io.SesProject.model.game.PlayerEntity;
 import io.SesProject.model.game.npc.NpcData;
 
 /*ABSTRACT PRODUCT OF NPC FACTORY METHOD APPLIED TO THE NPC SECTION*/
@@ -18,7 +19,7 @@ public abstract class NpcEntity extends GameObject {
         this.setMovementStrategy(data.getMovementStrategy());
     }
 
-    public abstract void interact(RpgGame game);
+    public abstract void interact(RpgGame game, PlayerEntity interactor);
 
     public String getName() { return data.getName(); }
     public boolean isHostile() { return data.isHostile(); }

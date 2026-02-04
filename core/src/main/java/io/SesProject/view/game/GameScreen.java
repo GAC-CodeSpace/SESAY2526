@@ -95,7 +95,7 @@ public class GameScreen extends BaseMenuScreen {
 
         } else {
             // Opzione Buona
-            TextButton goodBtn = new TextButton("Saluta", skin);
+            TextButton goodBtn = new TextButton("Aiuta", skin);
             goodBtn.addListener(new ChangeListener() {
                 @Override public void changed(ChangeEvent event, Actor actor) {
                     dialog.remove(); // Rimuove completamente il dialogo
@@ -166,5 +166,9 @@ public class GameScreen extends BaseMenuScreen {
         // IMPORTANTE: act(delta) fa funzionare le animazioni UI e gli input dei bottoni
         stage.act(delta);
         stage.draw();
+    }
+
+    public GameController getController() {
+        return this.controller;
     }
 }

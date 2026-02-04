@@ -17,7 +17,7 @@ public class NpcDirector {
         builder.buildIdentity("Villico", "villager"); // Sprite generico
         builder.buildPosition(x, y);
         builder.buildCombatStats(false, 10 , 0);
-        builder.buildInteraction("Bella giornata per una passeggiata, vero?");
+        builder.buildInteraction("Liberaci dai mostri, ti prego!!! sapro' ricompensarti");
         builder.buildBehavior(new StaticStrategy());
     }
 
@@ -27,7 +27,7 @@ public class NpcDirector {
         builder.buildIdentity("Mercante", "merchant"); // Sprite specifico
         builder.buildPosition(x, y);
         builder.buildCombatStats(false, 100 , 0); // I mercanti sono robusti!
-        builder.buildInteraction("Ho le migliori merci del regno!");
+        builder.buildInteraction("Il carro con le mie scorte e' stato rubato dai mostri, trovalo ti prego!!! sapro' ricompensarti");
         builder.buildBehavior(new StaticStrategy());
     }
 
@@ -36,7 +36,7 @@ public class NpcDirector {
         builder.buildIdentity("soldato", "solider"); // Sprite specifico
         builder.buildPosition(x, y);
         builder.buildCombatStats(false, 100 , 0); // I mercanti sono robusti!
-        builder.buildInteraction("Soldato al tuo servizio!!!");
+        builder.buildInteraction("C'ero quasi..., sono ferito aiutami!!! sapro' ricompensarti");
         builder.buildBehavior(new StaticStrategy());
     }
 
@@ -55,7 +55,7 @@ public class NpcDirector {
             builder.buildInteraction("CRAAASH! (Rumore di ossa giganti che si muovono)");
             builder.buildBehavior(new StaticStrategy()); // Boss fermo
         } else {
-            builder.buildInteraction(null); // Minion muti
+            builder.buildInteraction("Ti annienteremo!!!"); // Minion muti
             builder.buildBehavior(new InputMovementStrategy()); // Minion si muovono
         }
     }
