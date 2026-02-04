@@ -8,6 +8,7 @@ import io.SesProject.controller.game.controllerInputStrategy.KeyboardInputStrate
 import io.SesProject.controller.state.CombatState;
 import io.SesProject.controller.state.PausedState;
 import io.SesProject.model.GameSession;
+import io.SesProject.model.PlayerCharacter;
 import io.SesProject.model.game.GameObject;
 import io.SesProject.model.game.PlayerEntity;
 import io.SesProject.model.game.npc.NpcData;
@@ -27,6 +28,7 @@ public class GameController extends BaseController {
 
     // Flag per bloccare input durante le interazioni
     private boolean isDialogActive = false;
+    private PlayerCharacter playerInDialog;
     // NUOVO: Riferimento all'ultima entità con cui abbiamo parlato/combattuto
     private NpcEntity lastInteractedNpc = null;
 
@@ -104,54 +106,46 @@ public class GameController extends BaseController {
      * Game Loop Principale.
      */
     public void update(float delta) {
-
-        // --- CORREZIONE: BLOCCO INPUT ---
-        // Se il dialogo è attivo, fermiamo i giocatori e non processiamo input/collisioni.
+        // 1. Se c'è un dialogo, blocca tutto (tranne animazioni se vuoi)
         if (isDialogActive) {
             for(PlayerEntity p : activePlayers) {
-                p.setVelocity(0, 0); // Ferma l'inerzia
+                p.setVelocity(0, 0);
             }
-        } else {
-            // Se non c'è dialogo, il gioco procede normalmente
-            // 1. Input Strategies
-            for (InputStrategy s : inputStrategies) s.handleInput();
-
-            // 3. Collisioni
-            checkCollisions();
+            // Non fare altro se siamo in dialogo
+            return;
         }
 
-        // --- LOGICA DI RESET INTERAZIONE ---
-        // Se non sto più collidendo con l'NPC con cui ho appena finito di parlare,
-        // posso parlargli di nuovo se mi riavvicino.
+        // 2. Input e Movimento (Solo se NON c'è dialogo)
+        for (InputStrategy s : inputStrategies) s.handleInput();
+
+        // 3. Logica di Reset "Cooldown" Interazione
+        // Controlliamo se ci siamo allontanati dall'ultimo NPC
         if (lastInteractedNpc != null) {
-            // Controlliamo se almeno UN giocatore è ancora sopra l'NPC
             boolean stillColliding = false;
             for (PlayerEntity player : activePlayers) {
+                // Usiamo una versione leggermente più larga dell'overlap per sicurezza,
+                // o il checkOverlap standard
                 if (checkOverlap(player, lastInteractedNpc)) {
                     stillColliding = true;
                     break;
                 }
             }
-            // Se nessuno tocca più l'NPC, resetta lo stato
+
+            // Se non stiamo più toccando l'NPC, "dimentichiamo" l'interazione
+            // permettendo di parlarci di nuovo se ci riavviciniamo
             if (!stillColliding) {
                 System.out.println("[INTERACTION] Reset per: " + lastInteractedNpc.getName());
                 lastInteractedNpc = null;
             }
         }
 
-        if (!isDialogActive) {
-            checkCollisions();
-        }
-
-        // 3. Collisioni
-        if (!isDialogActive) {
-            checkCollisions();
-        }
-
-        // 2. Logic Updates (Animazioni e movimento NPC continuano anche durante il dialogo)
+        // 4. Update fisico entità
         for (GameObject obj : worldEntities) obj.update(delta);
 
-        // Rimozione nemici morti
+        // 5. Verifica Collisioni (una sola volta per frame è sufficiente)
+        checkCollisions();
+
+        // 6. Rimozione nemici morti
         worldEntities.removeIf(obj -> {
             if (obj instanceof NpcEntity) {
                 return ((NpcEntity) obj).isDefeated();
@@ -159,29 +153,39 @@ public class GameController extends BaseController {
             return false;
         });
 
-        // 4. System Input
+        // 7. System Input
         handleSystemInput();
     }
 
     private void checkCollisions() {
-        for (PlayerEntity player : activePlayers) {
+        for (PlayerEntity playerEntity : activePlayers) {
             for (GameObject obj : worldEntities) {
-                if (obj == player || obj instanceof PlayerEntity) continue;
+                if (obj == playerEntity || obj instanceof PlayerEntity) continue;
 
-                // Controlliamo solo se è un NPCEntity
-                if (obj instanceof NpcEntity) {
-                    NpcEntity npc = (NpcEntity) obj;
+                if (checkOverlap(playerEntity, obj)) {
+                    if (obj instanceof NpcEntity) {
+                        NpcEntity npc = (NpcEntity) obj;
 
-                    // --- NUOVO CONTROLLO: Posso interagire con questo NPC? ---
-                    // Se sto collidendo E non è lo stesso NPC con cui ho appena finito
-                    if (checkOverlap(player, npc) && npc != lastInteractedNpc) {
+                        // 1. Controllo Anti-Loop (Cooldown)
+                        if (npc == lastInteractedNpc) {
+                            continue;
+                        }
 
-                        // Memorizza questo NPC come "appena usato"
-                        lastInteractedNpc = npc;
+                        System.out.println("[GAME] Interazione avviata da: " + playerEntity.getName());
 
-                        System.out.println("[GAME] Interazione con: " + npc.getName());
-                        npc.interact(game);
-                        return; // Esce per evitare interazioni multiple
+                        // 2. Salviamo il riferimento
+                        this.lastInteractedNpc = npc;
+
+                        // --- CORREZIONE CRITICA ---
+                        // Impostiamo il flag a TRUE *PRIMA* di chiamare interact.
+                        // Così se l'NPC decide di chiudere subito (es. karma negativo),
+                        // la sua chiamata a endDialogState() sarà l'ultima a essere eseguita.
+                        this.isDialogActive = true;
+
+                        // 3. Avviamo l'interazione
+                        npc.interact(game, playerEntity);
+
+                        return;
                     }
                 }
             }
@@ -195,6 +199,10 @@ public class GameController extends BaseController {
             a.getY() + a.getHeight() > b.getY();
     }
 
+    public void setPlayerInDialog(PlayerCharacter pc) {
+        this.playerInDialog = pc;
+    }
+
     private void handleSystemInput() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             // Se c'è un dialogo aperto, ESC non fa nulla (o potrebbe chiudere il dialogo)
@@ -205,7 +213,7 @@ public class GameController extends BaseController {
         }
     }
 
-    // --- Metodi per la gestione del Dialogo (Chiamati dalla View) ---
+// --- Metodi per la gestione del Dialogo (Chiamati dalla View) ---
 
     public void startDialogState() {
         this.isDialogActive = true;
@@ -216,12 +224,26 @@ public class GameController extends BaseController {
     }
 
     public void handleDialogChoice(boolean isGoodChoice) {
-        if (isGoodChoice) {
-            System.out.println("[KARMA] Scelta buona effettuata. (+Karma)");
-        } else {
-            System.out.println("[KARMA] Scelta cattiva effettuata. (-Karma)");
+        // --- CORREZIONE ---
+        // Prima controlliamo se il player è null.
+        // Se è null, dobbiamo COMUNQUE sbloccare il gioco prima di uscire!
+        if (playerInDialog == null) {
+            System.err.println("[WARN] Tentativo di gestire scelta dialogo senza player attivo. Sblocco forzato.");
+            endDialogState(); // Sblocca il movimento
+            return;
         }
-        endDialogState();
+
+        if (isGoodChoice) {
+            System.out.println("[KARMA] Scelta buona. " + playerInDialog.getName() + " guadagna Karma.");
+            playerInDialog.modifyKarma(5);
+        } else {
+            System.out.println("[KARMA] Scelta cattiva. " + playerInDialog.getName() + " perde Karma.");
+            playerInDialog.modifyKarma(-15);
+        }
+
+        // Reset e chiusura
+        this.playerInDialog = null;
+        endDialogState(); // Sblocca il movimento
     }
 
     public void startCombatFromDialog(NpcData enemyData) {

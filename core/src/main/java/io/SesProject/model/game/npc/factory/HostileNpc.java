@@ -2,6 +2,7 @@ package io.SesProject.model.game.npc.factory;
 
 import io.SesProject.RpgGame;
 import io.SesProject.controller.state.CombatState;
+import io.SesProject.model.game.PlayerEntity;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.view.game.GameScreen;
 
@@ -17,7 +18,7 @@ public class HostileNpc extends NpcEntity{
      * Richiede il riferimento al gioco per cambiare stato.
      */
     @Override
-    public void interact(RpgGame game) {
+    public void interact(RpgGame game , PlayerEntity interactor) {
         System.out.println("[INTERACTION] Incontro con: " + getName());
 
         if (game.getScreen() instanceof GameScreen) {

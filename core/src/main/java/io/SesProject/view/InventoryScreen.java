@@ -68,16 +68,56 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
     /**
      * Ricostruisce la colonna di un giocatore usando il COMPOSITE PATTERN.
      */
+//    private void refreshPlayerColumn(Table panel, PlayerCharacter pc, String title) {
+//        panel.clear();
+//        panel.top();
+//
+//        // 1. Stats (Sempre fisse in alto, gestite dall'Observer)
+//        panel.add(new Label(title + ": " + pc.getArchetype(), skin)).padBottom(5).row();
+//        String statsStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp() + " | ATK: " + pc.getAttackPower();
+//        panel.add(new Label(statsStr, skin)).padBottom(15).row();
+//
+//        // 2. Rendering del Menu Composite
+//        MenuComponent menuRoot = controller.getInventoryTree(pc);
+//        renderCompositeTree(panel, menuRoot);
+//    }
+
+    // In InventoryScreen.java
+
+    /**
+     * Ricostruisce la colonna di un giocatore usando il COMPOSITE PATTERN.
+     */
     private void refreshPlayerColumn(Table panel, PlayerCharacter pc, String title) {
         panel.clear();
         panel.top();
 
-        // 1. Stats (Sempre fisse in alto, gestite dall'Observer)
-        panel.add(new Label(title + ": " + pc.getArchetype(), skin)).padBottom(5).row();
-        String statsStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp() + " | ATK: " + pc.getAttackPower();
-        panel.add(new Label(statsStr, skin)).padBottom(15).row();
+        // 1. Header (Nome e Archetipo)
+        Label titleLabel = new Label(title + ": " + pc.getArchetype(), skin);
+        titleLabel.setColor(Color.YELLOW); // Un tocco di colore per il titolo
+        panel.add(titleLabel).padBottom(5).row();
 
-        // 2. Rendering del Menu Composite
+        // 2. Stats - Riga 1: HP
+        // Usiamo un colore diverso se la vita è bassa (opzionale ma carino)
+        String hpStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp();
+        Label hpLabel = new Label(hpStr, skin);
+        if (pc.getHp() < pc.getMaxHp() * 0.3f) hpLabel.setColor(Color.RED);
+        panel.add(hpLabel).padBottom(2).row();
+
+        // 3. Stats - Riga 2: ATK e KARMA (--- NUOVO ---)
+        // Li mettiamo sulla stessa riga per risparmiare spazio verticale
+        String statsStr = "ATK: " + pc.getAttackPower() + "  |  KARMA: " + pc.getKarma();
+        Label statsLabel = new Label(statsStr, skin);
+
+        // Feedback visivo sul Karma: Rosso se negativo, Verde se positivo, Bianco se neutro
+        if (pc.getKarma() < 0) {
+            statsLabel.setColor(new Color(1f, 0.4f, 0.4f, 1f)); // Rosso chiaro
+        } else if (pc.getKarma() > 10) { // Soglia esempio per karma "buono"
+            statsLabel.setColor(new Color(0.4f, 1f, 0.4f, 1f)); // Verde chiaro
+        }
+
+        panel.add(statsLabel).padBottom(15).row();
+
+        // 4. Rendering del Menu Composite (Invariato)
         MenuComponent menuRoot = controller.getInventoryTree(pc);
         renderCompositeTree(panel, menuRoot);
     }

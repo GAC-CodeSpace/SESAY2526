@@ -37,8 +37,8 @@ public class PlayerEntity extends GameObject {
        return this.data.getArchetype();
     }
 
-    public PlayerEntity getData() {
-        return this;
+    public PlayerCharacter getData() {
+        return this.data;
     }
 
     @Override
