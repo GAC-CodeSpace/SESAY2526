@@ -29,6 +29,11 @@ public class VillageNpcFactory extends NpcFactory{
         return new FriendlyNpc(data);
     }
 
+    public NpcEntity createSolider(float x , float y){
+        director.constructSolider(builder , x , y);
+        return new FriendlyNpc(builder.getResult());
+    }
+
     /**
      * NUOVO METODO SPECIFICO: Crea sempre un Mercante.
      */

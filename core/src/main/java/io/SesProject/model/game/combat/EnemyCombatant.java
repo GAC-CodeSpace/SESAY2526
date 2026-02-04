@@ -14,7 +14,8 @@ public class EnemyCombatant extends Combatant {
     public EnemyCombatant(NpcData data) {
         super(data.getName(), data.getMaxHp());
         this.spriteName = data.getSpriteName();
-        // Qui in futuro potrai passare anche statistiche di attacco/difesa se aggiunte a NPCData
+        this.attackPower = data.getAttackPower();
+        this.spriteName = data.getSpriteName();
     }
 
     @Override

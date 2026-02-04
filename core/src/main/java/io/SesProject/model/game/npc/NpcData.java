@@ -20,6 +20,7 @@ public class NpcData {
     private float x, y;
     private int maxHp;
     private int currentHp;
+    private int attackPower;
     private MovementStrategy movementStrategy;
 
     public NpcData() {
@@ -66,10 +67,12 @@ public class NpcData {
         this.maxHp = maxHp;
         this.currentHp = maxHp; // Default full HP
     }
+
     public void setCurrentHp(int hp) { this.currentHp = hp; }
     public void setMovementStrategy(MovementStrategy behavior) { this.movementStrategy = behavior; }
     public boolean isDefeated() { return isDefeated; }
     public void setDefeated(boolean defeated) { isDefeated = defeated; }
+    public void setAttackPower(int power) { this.attackPower = power; }
 
     // Getters (usati dalle Entità di Gioco)
     public String getName() { return name; }
@@ -81,4 +84,5 @@ public class NpcData {
     public int getMaxHp() { return maxHp; }
     public int getCurrentHp() { return currentHp; }
     public MovementStrategy getMovementStrategy() { return movementStrategy; }
+    public int getAttackPower() { return attackPower; }
 }

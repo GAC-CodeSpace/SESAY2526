@@ -16,7 +16,7 @@ public class NpcDirector {
         builder.reset();
         builder.buildIdentity("Villico", "villager"); // Sprite generico
         builder.buildPosition(x, y);
-        builder.buildCombatStats(false, 10);
+        builder.buildCombatStats(false, 10 , 0);
         builder.buildInteraction("Bella giornata per una passeggiata, vero?");
         builder.buildBehavior(new StaticStrategy());
     }
@@ -26,8 +26,17 @@ public class NpcDirector {
         builder.reset();
         builder.buildIdentity("Mercante", "merchant"); // Sprite specifico
         builder.buildPosition(x, y);
-        builder.buildCombatStats(false, 100); // I mercanti sono robusti!
+        builder.buildCombatStats(false, 100 , 0); // I mercanti sono robusti!
         builder.buildInteraction("Ho le migliori merci del regno!");
+        builder.buildBehavior(new StaticStrategy());
+    }
+
+    public void constructSolider(NpcBuilder builder, float x, float y) {
+        builder.reset();
+        builder.buildIdentity("soldato", "solider"); // Sprite specifico
+        builder.buildPosition(x, y);
+        builder.buildCombatStats(false, 100 , 0); // I mercanti sono robusti!
+        builder.buildInteraction("Soldato al tuo servizio!!!");
         builder.buildBehavior(new StaticStrategy());
     }
 
@@ -38,7 +47,7 @@ public class NpcDirector {
     public void constructEnemyFromTemplate(NpcBuilder builder, float x, float y, EnemyTemplate template) {
         builder.reset();
         builder.buildIdentity(template.name, template.spriteName);
-        builder.buildCombatStats(true, template.maxHp);
+        builder.buildCombatStats(true, template.maxHp , template.attackPower);
         builder.buildPosition(x, y);
 
         // Distinzione dialogo Boss vs Minion (basata sul nome o HP)

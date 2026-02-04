@@ -62,6 +62,7 @@ public class LoadGameController extends BaseController {
 
             // 4. RESTORE: Idrata la sessione con i dati del Memento
             session.restore(memento);
+            session.setSaveSlotId(slotId);
 
             // 5. Aggiorna il contesto globale del gioco
             game.setCurrentSession(session);

@@ -58,20 +58,35 @@ public class PauseMenuController extends BaseController {
         GameSession session = game.getCurrentSession();
         String username = game.getCurrentUser().getUsername();
 
+        // Recupera il GameController attivo per ottenere lo stato del mondo
+        GameController gameController = game.getActiveGameController();
 
-        int slotId = 1;
+        if (session == null || gameController == null) {
+            System.err.println("[ERROR] Impossibile salvare: sessione o gioco non attivi.");
+            if (view instanceof PauseMenuScreen) {
+                ((PauseMenuScreen)view).showMessage("ERRORE", "Nessuna partita da salvare.");
+            }
+            return;
+        }
 
-        // 2. Creiamo il Memento
+        // --- CORREZIONE FONDAMENTALE ---
+        // 1. SINCRONIZZA: Aggiorna la GameSession con lo stato vivo del GameController
+        session.updateNpcsFromWorld(gameController.getWorldEntities());
+
+        // Ora session.getWorldNpcs() contiene solo i nemici rimasti vivi.
+
+        // 2. CREA MEMENTO: Lo snapshot ora conterrà la lista aggiornata
         Memento snapshot = session.save();
 
-        // 3. Salviamo sovrascrivendo
+        // 3. SALVA SU DISCO
+        // Recuperiamo lo slot ID della sessione
+        int slotId = session.getSaveSlotId(); // Devi aggiungere questo campo a GameSession!
+
         game.getSystemFacade().getSaveService().saveGame(snapshot, username, slotId);
-        SystemFacade facade = game.getSystemFacade();
 
-        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
-
+        // Feedback
         if (view instanceof PauseMenuScreen) {
-            ((PauseMenuScreen)view).showMessage("SALVATAGGIO", "Partita salvata con successo!");
+            ((PauseMenuScreen)view).showMessage("SALVATAGGIO", "Partita salvata nello Slot " + slotId);
         }
     }
 

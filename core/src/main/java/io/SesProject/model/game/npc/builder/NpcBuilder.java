@@ -8,7 +8,7 @@ public interface NpcBuilder {
     void reset();
     void buildIdentity(String name, String sprite);
     void buildPosition(float x, float y);
-    void buildCombatStats(boolean hostile, int hp);
+    void buildCombatStats(boolean hostile, int hp , int attackPower);
     void buildInteraction(String dialogue);
     void buildBehavior(MovementStrategy behavior);
 

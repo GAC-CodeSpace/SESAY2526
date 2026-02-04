@@ -9,10 +9,12 @@ public class EnemyTemplate {
     public String name;
     public String spriteName;
     public int maxHp;
+    public int attackPower;
 
-    public EnemyTemplate(String name, String spriteName, int maxHp) {
+    public EnemyTemplate(String name, String spriteName, int maxHp , int attackPower) {
         this.name = name;
         this.spriteName = spriteName;
         this.maxHp = maxHp;
+        this.attackPower = attackPower;
     }
 }

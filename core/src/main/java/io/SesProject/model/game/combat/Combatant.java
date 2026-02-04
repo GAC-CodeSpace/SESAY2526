@@ -12,6 +12,7 @@ public abstract class Combatant {
     protected String name;
     protected int currentHp;
     protected int maxHp;
+    protected int attackPower;
 
     //Lista di skill possedute
     protected List<Skill> skills;
@@ -68,6 +69,8 @@ public abstract class Combatant {
         }
     }
 
+    public void setAttackPower(int power) { this.attackPower = power; }
+    public int getAttackPower() { return attackPower; }
     public abstract String getSpriteName();
     public String getName() { return name; }
     public int getCurrentHp() { return currentHp; }
