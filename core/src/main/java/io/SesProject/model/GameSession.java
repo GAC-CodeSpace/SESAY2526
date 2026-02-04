@@ -34,21 +34,28 @@ public class GameSession {
 
     private int saveSlotId = -1; // -1 = nuovo/non salvato, >0 = slot esistente
 
-    public GameSession() {
-        // Inizializza la lista NPC
+    public GameSession(boolean isP1Tank) {
         this.worldNpcs = new ArrayList<>();
 
-        // Imposta la data
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         this.creationDate = LocalDateTime.now().format(dtf);
 
-        // --- FIX FONDAMENTALE: INIZIALIZZA I GIOCATORI ---
-        // Se queste righe mancano, p1 e p2 restano null -> Crash al salvataggio
-        this.p1 = new PlayerCharacter("Giocatore 1", "Warrior");
-        this.p2 = new PlayerCharacter("Giocatore 2", "Mage");
+        // Usa la tua scelta per decidere le classi
+        if (isP1Tank) {
+            this.p1 = new PlayerCharacter("Giocatore 1", "Warrior");
+            this.p2 = new PlayerCharacter("Giocatore 2", "Mage");
+        } else {
+            // Scambio dei ruoli!
+            this.p1 = new PlayerCharacter("Giocatore 1", "Mage");
+            this.p2 = new PlayerCharacter("Giocatore 2", "Warrior");
+        }
 
-        this.p2.setPosition(250 , 100);
-        this.p1.setPosition(100 , 100);
+        this.p2.setPosition(250, 100);
+        this.p1.setPosition(100, 100);
+    }
+
+    public GameSession() {
+        this(true); // Di default P1 è Tank
     }
 
     public void updateNpcsFromWorld(List<GameObject> worldEntities) {
