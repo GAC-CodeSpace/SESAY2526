@@ -70,7 +70,6 @@ public class RpgGame extends Game {
     @Override
     public void dispose() {
         if (batch != null) batch.dispose();
-        // Nota: La pulizia profonda dei servizi avviene in ExitState tramite la Facade
     }
 
     // --- GESTIONE CONTROLLER (Navigazione UI) ---

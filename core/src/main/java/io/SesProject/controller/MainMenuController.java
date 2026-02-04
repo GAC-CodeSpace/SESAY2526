@@ -64,7 +64,9 @@ public class MainMenuController extends BaseController {
 
         // 2. FRESH INSTANCE (Prototype concettuale):
         // Crea una nuova GameSession (qui nascono P1 e P2 a livello 1 con la data odierna)
+
         GameSession initialSession = new GameSession();
+
 
         // 3. MEMENTO: Cattura lo stato iniziale (inclusa la data di creazione)
         Memento snapshot = initialSession.save();

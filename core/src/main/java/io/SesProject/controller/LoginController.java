@@ -10,8 +10,6 @@ import io.SesProject.view.LoginScreen;
 
 public class LoginController extends BaseController {
 
-    // Nota: Non serve più SaveService qui!
-
     public LoginController(RpgGame game, AuthService authService) {
         super(game, authService);
         game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");

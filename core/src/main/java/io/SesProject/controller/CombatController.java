@@ -23,8 +23,9 @@ import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.game.combat.CombatScreen;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 public class CombatController extends BaseController {
 
@@ -37,26 +38,24 @@ public class CombatController extends BaseController {
     private List<Combatant> heroes;
     private List<Combatant> enemies;
 
-    // --- DATI SPECIFICI (Ponte con Esplorazione) ---
+    // --- DATI SPECIFICI ---
     private NpcData specificEnemyData;
 
-    /**
-     * Costruttore. Richiede obbligatoriamente i dati del nemico incontrato sulla mappa.
-     */
+    // Utilità per il random
+    private Random random;
+
     public CombatController(RpgGame game, AuthService authService, NpcData specificEnemyData) {
         super(game, authService);
 
-        // Controllo di sicurezza: Non si può avviare il combattimento senza un nemico target
         if (specificEnemyData == null) {
             throw new IllegalArgumentException("[ERROR] CombatController avviato senza dati nemico!");
         }
 
         this.specificEnemyData = specificEnemyData;
-
-        // Inizializzazione Liste (evita NullPointerException)
         this.heroes = new ArrayList<>();
         this.enemies = new ArrayList<>();
         this.turnQueue = new ArrayList<>();
+        this.random = new Random();
 
         initializeEncounter();
     }
@@ -64,7 +63,7 @@ public class CombatController extends BaseController {
     private void initializeEncounter() {
         GameSession session = game.getCurrentSession();
 
-        // 1. CARICAMENTO EROI (Co-op Locale)
+        // 1. CARICAMENTO EROI
         PlayerCombatant p1 = new PlayerCombatant(session.getP1());
         PlayerCombatant p2 = new PlayerCombatant(session.getP2());
 
@@ -72,20 +71,43 @@ public class CombatController extends BaseController {
         heroes.add(p2);
 
         // 2. CARICAMENTO NEMICO SPECIFICO
-        // Usiamo il costruttore Adapter di EnemyCombatant che accetta NPCData
         EnemyCombatant enemy = new EnemyCombatant(this.specificEnemyData);
         enemies.add(enemy);
 
-        System.out.println("[COMBAT] Ingaggiato: " + enemy.getName() + " (HP: " + enemy.getMaxHp() + ")");
+        System.out.println("[COMBAT] Ingaggiato: " + enemy.getName() +
+            " (HP: " + enemy.getMaxHp() + ", ATK: " + enemy.getAttackPower() + ")");
 
-        // 3. COSTRUZIONE CODA TURNI (P1 -> P2 -> Nemico)
+        // 3. COSTRUZIONE CODA TURNI INIZIALE
         turnQueue.add(p1);
         turnQueue.add(p2);
         turnQueue.add(enemy);
 
+        // --- NUOVO: ORDINAMENTO TURNI (Warrior First) ---
+        // Ordiniamo la lista in modo che il Warrior sia sempre all'indice 0.
+        Collections.sort(turnQueue, new Comparator<Combatant>() {
+            @Override
+            public int compare(Combatant c1, Combatant c2) {
+                // Se c1 è Warrior, va prima (-1)
+                if (isWarrior(c1)) return -1;
+                // Se c2 è Warrior, c1 va dopo (1)
+                if (isWarrior(c2)) return 1;
+                // Altrimenti mantieni ordine di inserimento o usa altre logiche (es. velocità)
+                return 0;
+            }
+        });
+
         // 4. AVVIO PRIMO TURNO
         this.turnIndex = 0;
         startTurn();
+    }
+
+    // Helper per verificare se è un Warrior
+    private boolean isWarrior(Combatant c) {
+        if (c instanceof PlayerCombatant) {
+            // Assumi che PlayerCombatant esponga l'archetipo o lo recuperi dal sourceData
+            return "Warrior".equalsIgnoreCase(((PlayerCombatant) c).getArchetype());
+        }
+        return false;
     }
 
     @Override
@@ -98,16 +120,11 @@ public class CombatController extends BaseController {
         MenuComposite root = new MenuComposite("ROOT");
         MenuComposite actions = new MenuComposite("AZIONI");
 
-        // Crea un bottone per ogni skill posseduta dal personaggio
         for (Skill s : currentActor.getSkills()) {
-
-            // Format del nome: "Fendente" oppure "Supernova (3)" se in cooldown
             String label = s.getName();
             if (!s.isReady()) {
                 label += " (" + s.getCurrentCooldown() + ")";
             }
-
-            // Command Pattern: Associa il comando specifico
             actions.add(new MenuItem(label, new UseSkillCommand(this, s)));
         }
 
@@ -115,16 +132,11 @@ public class CombatController extends BaseController {
         return root;
     }
 
-
     // --- LOGICA GESTIONE TURNI ---
-
     private void startTurn() {
         this.currentActor = turnQueue.get(turnIndex);
-
-        // 1. RIDUZIONE COOLDOWN (Logica di sistema)
         this.currentActor.tickCooldowns();
 
-        // Se il personaggio è morto (HP <= 0), salta il turno
         if (currentActor.getCurrentHp() <= 0) {
             nextTurn();
             return;
@@ -132,7 +144,6 @@ public class CombatController extends BaseController {
 
         System.out.println("[TURN] Inizio turno: " + currentActor.getName());
 
-        // Se tocca al Nemico -> AI automatica
         if (currentActor instanceof EnemyCombatant) {
             simulateEnemyTurn();
         }
@@ -143,79 +154,70 @@ public class CombatController extends BaseController {
     }
 
     public void nextTurn() {
-        // Avanzamento circolare nella lista
         turnIndex = (turnIndex + 1) % turnQueue.size();
         startTurn();
     }
 
-
-
+    // --- RECEIVER METHODS ---
     public void executeSkillUsage(Skill skill) {
         if (!isPlayerTurn()) return;
 
         if (!skill.isReady()) {
-            System.out.println("[WARNING] Abilità in ricarica! Attendi " + skill.getCurrentCooldown() + " turni.");
+            System.out.println("[WARNING] Abilità in ricarica!");
             return;
         }
 
         System.out.println("[ACTION] " + currentActor.getName() + " usa " + skill.getName());
 
-        // --- INTEGRAZIONE AUDIO ---
-        // Recuperiamo la facade e suoniamo l'effetto
-        // Nota: Assicurati che "sounds/attack.wav" sia stato caricato in SystemFacade.initializeSystems()
         SystemFacade facade = game.getSystemFacade();
-
-        // Qui potresti anche scegliere suoni diversi in base al nome della skill
-        // es. if(skill.getName().contains("Fuoco")) playSound("fire.wav")...
-        // Per ora usiamo un suono generico di attacco.
         facade.getAudioManager().playSound("music/sfx/battle/03_Claw_03.wav", facade.getAssetManager());
-        // --------------------------
 
-        // Target: Primo nemico (Logica semplificata)
+        // Target: Primo nemico
         Combatant target = enemies.get(0);
 
-        // Esecuzione effetto (Model Strategy)
         skill.use(currentActor, target);
 
-        // Controllo vittoria
         if (!checkWinCondition()) {
             nextTurn();
         }
     }
 
-    // --- AI NEMICA ---
-
+    // --- AI NEMICA AGGIORNATA ---
     private void simulateEnemyTurn() {
-        Combatant target = heroes.get(0).getCurrentHp() > 0 ? heroes.get(0) : heroes.get(1);
+        // 1. Filtra gli eroi vivi
+        List<Combatant> aliveHeroes = heroes.stream()
+            .filter(h -> h.getCurrentHp() > 0)
+            .collect(Collectors.toList());
+
+        if (aliveHeroes.isEmpty()) {
+            checkLoseCondition();
+            return;
+        }
+
+        // 2. NUOVO: Scegli un bersaglio CASUALE tra quelli vivi
+        Combatant target = aliveHeroes.get(random.nextInt(aliveHeroes.size()));
 
         System.out.println("[AI] " + currentActor.getName() + " attacca " + target.getName());
 
-        // --- AUDIO PER NEMICO ---
-        // Anche il nemico fa rumore quando attacca
         SystemFacade facade = game.getSystemFacade();
         facade.getAudioManager().playSound("music/sfx/battle/03_Claw_03.wav", facade.getAssetManager());
-        // ------------------------------------
 
-        target.takeDamage(10);
+        // 3. NUOVO: Danno variabile basato sulla potenza del nemico
+        int damage = currentActor.getAttackPower();
+        // (Opzionale: aggiungi una variazione casuale, es. damage +/- 2)
+
+        target.takeDamage(damage);
 
         if (!checkLoseCondition()) {
             nextTurn();
         }
     }
 
-    // --- CONDIZIONI DI VITTORIA / SCONFITTA ---
-
+    // --- CONDIZIONI ---
     private boolean checkWinCondition() {
-        // Se il nemico è morto
         if (enemies.get(0).getCurrentHp() <= 0) {
             System.out.println("[COMBAT] VITTORIA!");
-
-            // --- FIX LOOP MAPPA ---
-            // Marchiamo l'NPC originale come sconfitto.
-            // Il GameController leggerà questo flag e rimuoverà l'entità dalla mappa.
             this.specificEnemyData.setDefeated(true);
-
-            // Torna all'esplorazione
             game.changeAppState(new PlayState());
             return true;
         }
@@ -223,29 +225,23 @@ public class CombatController extends BaseController {
     }
 
     private boolean checkLoseCondition() {
-        // Controlla se tutti gli eroi sono morti
         boolean allDead = true;
         for (Combatant h : heroes) {
             if (h.getCurrentHp() > 0) allDead = false;
         }
-
         if (allDead) {
             System.out.println("[COMBAT] GAME OVER...");
-            // Ricarica il PlayState (o manda al menu principale/game over screen)
             game.changeAppState(new PlayState());
             return true;
         }
         return false;
     }
 
-
-    // --- GETTERS PER LA VIEW ---
+    // --- GETTERS ---
     public Combatant getCurrentActor() { return currentActor; }
     public List<Combatant> getHeroes() { return heroes; }
     public List<Combatant> getEnemies() { return enemies; }
-   // public RpgGame getGame() {return this.game;}
 
-    // Helper per la UI: abilita i bottoni solo se tocca a un umano
     public boolean isPlayerTurn() {
         return currentActor instanceof PlayerCombatant;
     }

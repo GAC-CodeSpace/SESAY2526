@@ -197,10 +197,21 @@ public class CombatScreen extends BaseMenuScreen {
 
     @Override
     public void dispose() {
-        super.dispose();
-        if (p1InfoView != null) p1InfoView.detach();
-        if (p2InfoView != null) p2InfoView.detach();
-        if (enemyInfoView != null) enemyInfoView.detach();
+        super.dispose(); // Chiama il dispose dello Stage
+
+        System.out.println("[UI] Distruzione CombatScreen: stacco gli observers...");
+
+        // Stacca gli observer dai rispettivi subject per evitare memory leak
+        // e notifiche fantasma.
+        if (p1InfoView != null) {
+            p1InfoView.detach();
+        }
+        if (p2InfoView != null) {
+            p2InfoView.detach();
+        }
+        if (enemyInfoView != null) {
+            enemyInfoView.detach();
+        }
     }
 }
 

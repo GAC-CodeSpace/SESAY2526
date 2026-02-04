@@ -50,4 +50,5 @@ public class PlayerCombatant extends Combatant {
     public String getSpriteName() {
         return this.sourceData.getArchetype();
     }
+    public String getArchetype(){return this.sourceData.getArchetype();}
 }
