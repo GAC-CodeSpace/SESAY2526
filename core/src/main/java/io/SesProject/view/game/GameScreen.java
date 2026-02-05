@@ -3,6 +3,7 @@ package io.SesProject.view.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -12,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 import io.SesProject.controller.GameController;
 import io.SesProject.model.game.GameObject;
+import io.SesProject.model.game.map.GameMap;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.visualState.VisualState;
 import io.SesProject.view.BaseMenuScreen;
@@ -143,6 +145,15 @@ public class GameScreen extends BaseMenuScreen {
             stage.getBatch().setProjectionMatrix(stage.getViewport().getCamera().combined);
             stage.getBatch().setColor(Color.WHITE);
 
+            // Render the map first (lowest z-depth)
+            if (controller.getMapController() != null) {
+                GameMap map = controller.getMapController().getCurrentMap();
+                if (map != null) {
+                    map.render((SpriteBatch) stage.getBatch());
+                }
+            }
+
+            // Then render entities on top of the map
             for (GameObject obj : controller.getWorldEntities()) {
                 // Recupera stato e dati
                 VisualState state = obj.getVisualState();

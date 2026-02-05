@@ -19,6 +19,9 @@ public abstract class GameObject {
     // Teniamo traccia dell'ultima direzione per l'Idle
     private VisualState lastDirection = VisualState.IDLE_DOWN;
 
+    // Collision property for map interaction
+    protected boolean solid = false;
+
     public GameObject() {
         this.movementBehavior = new StaticStrategy();
         this.width = 32;  // Dimensione del quadrato
@@ -80,6 +83,10 @@ public abstract class GameObject {
     public float getWidth() { return width; }
     public float getHeight() { return height; }
     public void setMovementStrategy(MovementStrategy b) { this.movementBehavior = b; }
+
+    // Collision methods
+    public boolean isSolid() { return solid; }
+    public void setSolid(boolean solid) { this.solid = solid; }
 
     public abstract String getSpriteName();
 }
