@@ -5,12 +5,14 @@ import com.badlogic.gdx.Input;
 import io.SesProject.RpgGame;
 import io.SesProject.controller.game.controllerInputStrategy.InputStrategy;
 import io.SesProject.controller.game.controllerInputStrategy.KeyboardInputStrategy;
+import io.SesProject.controller.map.MapController;
 import io.SesProject.controller.state.CombatState;
 import io.SesProject.controller.state.PausedState;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.PlayerCharacter;
 import io.SesProject.model.game.GameObject;
 import io.SesProject.model.game.PlayerEntity;
+import io.SesProject.model.game.map.Tile;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.npc.factory.*;
 import io.SesProject.service.AuthService;
@@ -26,6 +28,9 @@ public class GameController extends BaseController {
     private List<InputStrategy> inputStrategies;
     private List<PlayerEntity> activePlayers;
 
+    // Map controller for managing the game map
+    private MapController mapController;
+
     // Flag per bloccare input durante le interazioni
     private boolean isDialogActive = false;
     private PlayerCharacter playerInDialog;
@@ -37,6 +42,7 @@ public class GameController extends BaseController {
         this.worldEntities = new ArrayList<>();
         this.inputStrategies = new ArrayList<>();
         this.activePlayers = new ArrayList<>();
+        this.mapController = new MapController();
 
         initializeGame();
 
@@ -159,6 +165,9 @@ public class GameController extends BaseController {
 
     private void checkCollisions() {
         for (PlayerEntity playerEntity : activePlayers) {
+            // Check collisions with map tiles first
+            checkMapCollisions(playerEntity);
+            
             for (GameObject obj : worldEntities) {
                 if (obj == playerEntity || obj instanceof PlayerEntity) continue;
 
@@ -197,6 +206,36 @@ public class GameController extends BaseController {
             a.getX() + a.getWidth() > b.getX() &&
             a.getY() < b.getY() + b.getHeight() &&
             a.getY() + a.getHeight() > b.getY();
+    }
+
+    /**
+     * Checks collisions between a player and map tiles
+     */
+    private void checkMapCollisions(PlayerEntity player) {
+        if (mapController == null || mapController.getSolidTiles() == null) {
+            return;
+        }
+        
+        List<Tile> solidTiles = mapController.getSolidTiles();
+        for (Tile tile : solidTiles) {
+            if (checkOverlapWithTile(player, tile)) {
+                // Simple collision response: stop the player's movement
+                player.setVelocity(0, 0);
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Checks if a game object overlaps with a tile
+     */
+    private boolean checkOverlapWithTile(GameObject obj, Tile tile) {
+        float tileX = tile.getPosition().x;
+        float tileY = tile.getPosition().y;
+        return obj.getX() < tileX + tile.getWidth() &&
+            obj.getX() + obj.getWidth() > tileX &&
+            obj.getY() < tileY + tile.getHeight() &&
+            obj.getY() + obj.getHeight() > tileY;
     }
 
     public void setPlayerInDialog(PlayerCharacter pc) {
@@ -259,5 +298,21 @@ public class GameController extends BaseController {
 
     public RpgGame getGame(){
         return this.game;
+    }
+    
+    /**
+     * Gets the map controller
+     */
+    public MapController getMapController() {
+        return mapController;
+    }
+    
+    /**
+     * Loads a level by filename
+     */
+    public void loadLevel(String filename) {
+        if (mapController != null) {
+            mapController.loadLevel(filename);
+        }
     }
 }
