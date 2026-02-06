@@ -8,6 +8,7 @@ package io.SesProject.controller;
 import io.SesProject.RpgGame;
 import io.SesProject.controller.command.Command;
 import io.SesProject.controller.command.combatCommand.UseSkillCommand;
+import io.SesProject.controller.state.GameOverState;
 import io.SesProject.controller.state.PlayState;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.game.Skill;
@@ -224,14 +225,32 @@ public class CombatController extends BaseController {
         return false;
     }
 
+//    private boolean checkLoseCondition() {
+//        boolean allDead = true;
+//        for (Combatant h : heroes) {
+//            if (h.getCurrentHp() > 0) allDead = false;
+//        }
+//        if (allDead) {
+//            System.out.println("[COMBAT] GAME OVER...");
+//            game.changeAppState(new PlayState());
+//            return true;
+//        }
+//        return false;
+//    }
+
     private boolean checkLoseCondition() {
+        // Controlla se tutti gli eroi sono morti
         boolean allDead = true;
         for (Combatant h : heroes) {
             if (h.getCurrentHp() > 0) allDead = false;
         }
+
         if (allDead) {
-            System.out.println("[COMBAT] GAME OVER...");
-            game.changeAppState(new PlayState());
+            System.out.println("[COMBAT] SCONFITTA! Tutti gli eroi sono caduti.");
+
+            // --- CORREZIONE US23: Transizione a Game Over ---
+            game.changeAppState(new GameOverState());
+
             return true;
         }
         return false;

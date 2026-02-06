@@ -22,7 +22,7 @@ public class Bestiary {
             new EnemyTemplate("Scheletro", "skeleton", 50 , 5)
         ));
         // Boss: Scheletro Gigante (versione più debole)
-        dungeonBosses.put(1, new EnemyTemplate("Scheletro Gigante", "giant_skeleton", 200 , 15));
+        dungeonBosses.put(1, new EnemyTemplate("Scheletro Gigante", "giant_skeleton", 200 , 100));
 
         // --- LIVELLO 2 ---
         // Minions: Scheletri più forti
