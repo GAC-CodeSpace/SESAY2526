@@ -56,7 +56,7 @@ public class NpcDirector {
             builder.buildBehavior(new StaticStrategy()); // Boss fermo
         } else {
             builder.buildInteraction("Ti annienteremo!!!"); // Minion muti
-            builder.buildBehavior(new InputMovementStrategy()); // Minion si muovono
+            builder.buildBehavior(new StaticStrategy()); // Minion si muovono
         }
     }
 }

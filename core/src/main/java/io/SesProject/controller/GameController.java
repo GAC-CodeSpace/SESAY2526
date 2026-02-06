@@ -11,6 +11,9 @@ import io.SesProject.model.GameSession;
 import io.SesProject.model.PlayerCharacter;
 import io.SesProject.model.game.GameObject;
 import io.SesProject.model.game.PlayerEntity;
+import io.SesProject.model.game.item.factory.Item;
+import io.SesProject.model.game.item.factory.SkillItemFactory;
+import io.SesProject.model.game.item.factory.WeaponFactory;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.npc.factory.*;
 import io.SesProject.service.AuthService;
@@ -223,19 +226,21 @@ public class GameController extends BaseController {
         this.isDialogActive = false;
     }
 
+
     public void handleDialogChoice(boolean isGoodChoice) {
-        // --- CORREZIONE ---
-        // Prima controlliamo se il player è null.
-        // Se è null, dobbiamo COMUNQUE sbloccare il gioco prima di uscire!
+        // Controllo di sicurezza
         if (playerInDialog == null) {
-            System.err.println("[WARN] Tentativo di gestire scelta dialogo senza player attivo. Sblocco forzato.");
-            endDialogState(); // Sblocca il movimento
+            endDialogState();
             return;
         }
 
         if (isGoodChoice) {
             System.out.println("[KARMA] Scelta buona. " + playerInDialog.getName() + " guadagna Karma.");
             playerInDialog.modifyKarma(5);
+
+            // --- NUOVA LOGICA: RICOMPENSA ITEM ---
+            giveRewardBasedOnArchetype(playerInDialog);
+
         } else {
             System.out.println("[KARMA] Scelta cattiva. " + playerInDialog.getName() + " perde Karma.");
             playerInDialog.modifyKarma(-15);
@@ -243,13 +248,39 @@ public class GameController extends BaseController {
 
         // Reset e chiusura
         this.playerInDialog = null;
-        endDialogState(); // Sblocca il movimento
+        endDialogState();
     }
 
     public void startCombatFromDialog(NpcData enemyData) {
         System.out.println("[GAME] Transizione verso CombatState contro: " + enemyData.getName());
         endDialogState();
         game.changeAppState(new CombatState(enemyData));
+    }
+
+    /**
+     * Metodo privato per generare e assegnare la ricompensa
+     */
+    private void giveRewardBasedOnArchetype(PlayerCharacter player) {
+        Item reward = null;
+        String archetipo = player.getArchetype();
+
+        // Logica di assegnazione
+        // Nota: Assumo che "Warrior" sia la stringa esatta salvata nel player
+        if ("Warrior".equalsIgnoreCase(archetipo)) {
+            // Genera un'arma casuale o specifica
+            reward = new WeaponFactory("Sword").createItem();
+        } else {
+            // Per Mago o altri: Genera una Skill
+            reward = new SkillItemFactory("Benedizione Antica").createItem();
+        }
+
+        if (reward != null) {
+            player.addItem(reward);
+            System.out.println("[REWARD] Assegnato oggetto: " + reward.getName() + " a " + player.getName());
+
+            // Opzionale: Feedback sonoro per l'acquisizione oggetto
+            game.getSystemFacade().getAudioManager().playSound("music/sfx/menu/070_Equip_10.wav", game.getSystemFacade().getAssetManager());
+        }
     }
 
     // --- Getters ---

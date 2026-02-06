@@ -65,24 +65,6 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
         refreshPlayerColumn(p2Panel, p2, "PLAYER 2");
     }
 
-    /**
-     * Ricostruisce la colonna di un giocatore usando il COMPOSITE PATTERN.
-     */
-//    private void refreshPlayerColumn(Table panel, PlayerCharacter pc, String title) {
-//        panel.clear();
-//        panel.top();
-//
-//        // 1. Stats (Sempre fisse in alto, gestite dall'Observer)
-//        panel.add(new Label(title + ": " + pc.getArchetype(), skin)).padBottom(5).row();
-//        String statsStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp() + " | ATK: " + pc.getAttackPower();
-//        panel.add(new Label(statsStr, skin)).padBottom(15).row();
-//
-//        // 2. Rendering del Menu Composite
-//        MenuComponent menuRoot = controller.getInventoryTree(pc);
-//        renderCompositeTree(panel, menuRoot);
-//    }
-
-    // In InventoryScreen.java
 
     /**
      * Ricostruisce la colonna di un giocatore usando il COMPOSITE PATTERN.
