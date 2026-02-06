@@ -3,6 +3,7 @@ package io.SesProject.model;
 
 import io.SesProject.model.game.GameObject;
 import io.SesProject.model.game.movementStrategy.InputMovementStrategy;
+import io.SesProject.model.game.movementStrategy.RandomMovementStrategy;
 import io.SesProject.model.game.movementStrategy.StaticStrategy;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.npc.factory.NpcEntity;
@@ -121,7 +122,7 @@ public class GameSession {
         if (data.isHostile()) {
             data.setMovementStrategy(new InputMovementStrategy());
         } else {
-            data.setMovementStrategy(new StaticStrategy());
+            data.setMovementStrategy(new RandomMovementStrategy());
         }
     }
 
