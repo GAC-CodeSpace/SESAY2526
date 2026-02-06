@@ -15,6 +15,7 @@ import io.SesProject.model.game.PlayerEntity;
 import io.SesProject.model.game.item.factory.Item;
 import io.SesProject.model.game.item.factory.SkillItemFactory;
 import io.SesProject.model.game.item.factory.WeaponFactory;
+import io.SesProject.model.game.map.Tile;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.npc.factory.*;
 import io.SesProject.service.AuthService;
@@ -169,7 +170,7 @@ public class GameController extends BaseController {
         for (PlayerEntity playerEntity : activePlayers) {
             // Check collisions with map tiles first
             checkMapCollisions(playerEntity);
-            
+
             for (GameObject obj : worldEntities) {
                 if (obj == playerEntity || obj instanceof PlayerEntity) continue;
 
@@ -217,7 +218,7 @@ public class GameController extends BaseController {
         if (mapController == null || mapController.getSolidTiles() == null) {
             return;
         }
-        
+
         List<Tile> solidTiles = mapController.getSolidTiles();
         for (Tile tile : solidTiles) {
             if (checkOverlapWithTile(player, tile)) {
@@ -227,7 +228,7 @@ public class GameController extends BaseController {
             }
         }
     }
-    
+
     /**
      * Checks if a game object overlaps with a tile
      */
@@ -329,14 +330,14 @@ public class GameController extends BaseController {
     public RpgGame getGame(){
         return this.game;
     }
-    
+
     /**
      * Gets the map controller
      */
     public MapController getMapController() {
         return mapController;
     }
-    
+
     /**
      * Loads a level by filename
      */
