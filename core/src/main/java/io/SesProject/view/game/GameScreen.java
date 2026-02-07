@@ -2,6 +2,7 @@ package io.SesProject.view.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -25,12 +26,33 @@ public class GameScreen extends BaseMenuScreen {
     private GameController controller;
     private SpriteFlyweightFactory spriteFactory;
 
+    private OrthographicCamera gameCamera;
     public GameScreen(GameController controller) {
         super();
         this.controller = controller;
         // Inizializza la factory passandogli la facade
         this.spriteFactory = new SpriteFlyweightFactory(controller.getGame().getSystemFacade());
 
+        //camera dedicata al gioco
+        gameCamera= new OrthographicCamera();
+        gameCamera.setToOrtho(false, stage.getViewport().getWorldWidth(), stage.getViewport().getWorldHeight());
+        //zoom >1 = zoom indietro, <1 = zoom avanti
+        gameCamera.zoom=0.6f;
+        //centra la camera
+        try{
+            if(controller.getMapController() != null && controller.getMapController().getCurrentMap() != null){
+                GameMap map = controller.getMapController().getCurrentMap();
+                Rectangle bounds = map.getActualBounds();
+                //posiziona la camera al centro
+                gameCamera.position.set(
+                    bounds.x +bounds.width/2f, bounds.y + bounds.height/2f,0
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("[GameScreen] could not center camera on map: "+e.getMessage());
+        }
+
+        gameCamera.update();
         // Imposta l'input processor subito
         Gdx.input.setInputProcessor(stage);
 
@@ -143,7 +165,7 @@ public class GameScreen extends BaseMenuScreen {
             // 2. Rendering del Mondo (Dietro la UI)
             stage.getBatch().begin();
             // Imposta la matrice corretta per disegnare nel mondo
-            stage.getBatch().setProjectionMatrix(stage.getViewport().getCamera().combined);
+            stage.getBatch().setProjectionMatrix(gameCamera.combined);
             stage.getBatch().setColor(Color.WHITE);
 
             // Render the map first (lowest z-depth)
@@ -151,49 +173,9 @@ public class GameScreen extends BaseMenuScreen {
                 GameMap map = controller.getMapController().getCurrentMap();
                 if (map != null) {
                     try{
-                    // Get actual map bounds (excluding empty tiles)
-                    Rectangle actualBounds = map.getActualBounds();
-                    float mapWidthPixels = actualBounds.width;
-                    float mapHeightPixels = actualBounds.height;
-                    float mapOffsetX = actualBounds.x;
-                    float mapOffsetY = actualBounds.y;
-
-                    // Get screen dimensions
-                    float screenWidth = stage.getViewport().getWorldWidth();
-                    float screenHeight = stage.getViewport().getWorldHeight();
-
-                    // Calculate scale to fit map on screen while maintaining aspect ratio
-                    float scaleX = screenWidth / mapWidthPixels;
-                    float scaleY = screenHeight / mapHeightPixels;
-                    float scale = Math.min(scaleX, scaleY) * 0.9f; // 90% to leave some margin
-
-                    // Calculate scaled dimensions
-                    float scaledMapWidth = mapWidthPixels * scale;
-                    float scaledMapHeight = mapHeightPixels * scale;
-
-                    // Calculate offset to center the scaled map
-                    float offsetX = (screenWidth - scaledMapWidth) / 2f - (mapOffsetX * scale);
-                    float offsetY = (screenHeight - scaledMapHeight) / 2f - (mapOffsetY * scale);
-
-                    // Debug logging
-                    System.out.println("[GameScreen] Actual map bounds: " + actualBounds);
-                    System.out.println("[GameScreen] Map dimensions: " + mapWidthPixels + "x" + mapHeightPixels);
-                    System.out.println("[GameScreen] Screen dimensions: " + screenWidth + "x" + screenHeight);
-                    System.out.println("[GameScreen] Scale: " + scale);
-                    System.out.println("[GameScreen] Final offset: (" + offsetX + ", " + offsetY + ")");
-
-                    // Apply transformation: translate then scale
-                    stage.getBatch().getTransformMatrix().idt(); // Reset matrix
-                    stage.getBatch().getTransformMatrix().translate(offsetX, offsetY, 0);
-                    stage.getBatch().getTransformMatrix().scale(scale, scale, 1);
-
-                    map.render((SpriteBatch) stage.getBatch());
-
-                    // Keep the transformation applied for entities - they use the same transform
+                        map.render((SpriteBatch) stage.getBatch());
                 } catch (Exception e) {
                     System.err.println("[GameScreen] Error rendering map: " + e.getMessage());
-                    // Reset transform matrix to prevent corruption
-                    stage.getBatch().getTransformMatrix().idt();
                 }
                 }
             }
@@ -231,6 +213,30 @@ public class GameScreen extends BaseMenuScreen {
         // IMPORTANTE: act(delta) fa funzionare le animazioni UI e gli input dei bottoni
         stage.act(delta);
         stage.draw();
+    }
+
+    @Override
+    public void resize(int width, int height){
+        super.resize(width,height);
+
+        if(gameCamera!=null){
+            gameCamera.setToOrtho(false, stage.getViewport().getWorldWidth(),stage.getViewport().getWorldHeight());
+            gameCamera.zoom=0.6f;
+
+            try{
+                if(controller.getMapController() != null && controller.getMapController().getCurrentMap() != null){
+                    GameMap map = controller.getMapController().getCurrentMap();
+                    Rectangle bounds = map.getActualBounds();
+
+                    gameCamera.position.set(
+                        bounds.x+ bounds.width/2f,bounds.y + bounds.height/2f,0
+                    );
+                }
+            } catch (Exception e) {
+                System.err.println("[GameScreen] could not center camera on resize: "+ e.getMessage());
+            }
+            gameCamera.update();
+        }
     }
 
     public GameController getController() {
