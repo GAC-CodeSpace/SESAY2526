@@ -80,13 +80,13 @@ public class GameController extends BaseController {
         activePlayers.add(p1);
         inputStrategies.add(new KeyboardInputStrategy(p1,
             Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D));
-
+        p1.setPosition(230,300);
         PlayerEntity p2 = new PlayerEntity(session.getP2(), game);
         worldEntities.add(p2);
         activePlayers.add(p2);
         inputStrategies.add(new KeyboardInputStrategy(p2,
             Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT));
-
+        p2.setPosition(250,310);
         // --- 2. SETUP NPC ---
         if (!session.getWorldNpcs().isEmpty()) {
             System.out.println("[GAME] Caricamento NPC da salvataggio...");

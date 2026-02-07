@@ -31,6 +31,11 @@
    <property name="calpestabile" type="bool" value="false"/>
   </properties>
  </tile>
+ <tile id="54">
+  <properties>
+   <property name="calpestabile" type="bool" value="false"/>
+  </properties>
+ </tile>
  <tile id="96" type="Casa">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
@@ -154,7 +159,7 @@
  </tile>
  <tile id="241" type="Terreno">
   <properties>
-   <property name="calpestabile" type="bool" value="true"/>
+   <property name="calpestabile" type="bool" value="false"/>
   </properties>
  </tile>
  <tile id="242" type="Terreno">
