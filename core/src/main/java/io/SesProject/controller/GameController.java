@@ -34,6 +34,11 @@ public class GameController extends BaseController {
     // Map controller for managing the game map
     private MapController mapController;
 
+    private boolean warnedNoSolidTiles = false;
+
+    private float prevX1, prevY1;  // Player 1 previous position
+    private float prevX2, prevY2;
+    private static final boolean DEBUG_COLLISIONS = false;
     // Flag per bloccare input durante le interazioni
     private boolean isDialogActive = false;
     private PlayerCharacter playerInDialog;
@@ -58,7 +63,7 @@ public class GameController extends BaseController {
             System.err.println("[ERROR] Nessuna sessione attiva!");
             return;
         }
-
+        mapController.loadLevel("Dungeon1/Dungeon_1.tmx");
         // --- 1. SETUP PLAYERS ---
         PlayerEntity p1 = new PlayerEntity(session.getP1() , game);
         worldEntities.add(p1);
@@ -150,7 +155,17 @@ public class GameController extends BaseController {
 
         // 4. Update fisico entità
         for (GameObject obj : worldEntities) obj.update(delta);
+        // salva posizione
+        if (activePlayers.size() > 0) {
+            prevX1 = activePlayers.get(0).getX();
+            prevY1 = activePlayers.get(0).getY();
+        }
+        if (activePlayers.size() > 1) {
+            prevX2 = activePlayers.get(1).getX();
+            prevY2 = activePlayers.get(1).getY();
+        }
 
+        for (GameObject obj : worldEntities) obj.update(delta);
         // 5. Verifica Collisioni (una sola volta per frame è sufficiente)
         checkCollisions();
 
@@ -220,9 +235,43 @@ public class GameController extends BaseController {
         }
 
         List<Tile> solidTiles = mapController.getSolidTiles();
+
+        // Debug: Log number of solid tiles (only once)
+        if (solidTiles.isEmpty() && !warnedNoSolidTiles) {
+            System.out.println("[COLLISION] Warning: No solid tiles found in map");
+            warnedNoSolidTiles = true;
+        }
+
+        // Determine which previous position to use
+        float prevX, prevY;
+        int playerIndex = activePlayers.indexOf(player);
+        if (playerIndex == 0) {
+            prevX = prevX1;
+            prevY = prevY1;
+        } else if (playerIndex == 1) {
+            prevX = prevX2;
+            prevY = prevY2;
+        } else {
+            // Player not found in list, shouldn't happen but handle gracefully
+            System.err.println("[COLLISION] Warning: Player not found in activePlayers list");
+            // Stop velocity as a safety measure
+            player.setVelocity(0, 0);
+            return;
+        }
+
         for (Tile tile : solidTiles) {
             if (checkOverlapWithTile(player, tile)) {
-                // Simple collision response: stop the player's movement
+                // Debug logging (only if enabled)
+                if (DEBUG_COLLISIONS) {
+                    System.out.println(String.format(
+                        "[COLLISION] Player '%s' collided with tile at (%.1f, %.1f) - Reverting to (%.1f, %.1f)",
+                        player.getName(), tile.getPosition().x, tile.getPosition().y, prevX, prevY
+                    ));
+                }
+
+                // Collision response: revert player to previous position
+                player.setPosition(prevX, prevY);
+                // Also stop velocity to prevent stuttering
                 player.setVelocity(0, 0);
                 break;
             }
@@ -240,6 +289,7 @@ public class GameController extends BaseController {
             obj.getY() < tileY + tile.getHeight() &&
             obj.getY() + obj.getHeight() > tileY;
     }
+
 
     public void setPlayerInDialog(PlayerCharacter pc) {
         this.playerInDialog = pc;
