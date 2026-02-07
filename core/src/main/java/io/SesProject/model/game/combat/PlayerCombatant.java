@@ -38,12 +38,15 @@ public class PlayerCombatant extends Combatant {
         else if (archetype.equalsIgnoreCase("Mage")) { // Arcanista
             // 1. Dardo Arcano (Cooldown 0)
             this.skills.add(new Skill("Dardo Arcano", 0, dummyAttack));
-            // 2. Congelamento
+            // 2. Congelamento (Cooldown 3)
             this.skills.add(new Skill("Congelamento", 3, dummyAttack));
-            // ... altre skill ...
+            // 3. Scudo di Energia (Aggiunta - Cooldown 4)
+            this.skills.add(new Skill("Scudo di Energia", 4, dummyAttack));
+            // 4. Esplosione di Fuoco (Aggiunta - Cooldown 3)
+            this.skills.add(new Skill("Esplosione di Fuoco", 3, dummyAttack));
+            // 5. Supernova (Spostata come quinta - Cooldown 6)
             this.skills.add(new Skill("Supernova", 6, dummyAttack));
         }
-    }
 
 
     @Override
