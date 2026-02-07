@@ -11,7 +11,7 @@ public class RegisterController extends BaseController {
 
     public RegisterController(RpgGame game, AuthService authService) {
         super(game, authService);
-        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
+        //game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
     }
 
     @Override

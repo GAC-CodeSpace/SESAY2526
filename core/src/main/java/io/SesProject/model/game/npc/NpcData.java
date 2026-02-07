@@ -40,6 +40,7 @@ public class NpcData {
         m.y = this.y;
         m.currentHp = this.currentHp;
         m.maxHp = this.maxHp;
+        m.attackPower = this.attackPower;
         m.isDefeated = this.isDefeated; // Fondamentale!
         return m;
     }
@@ -54,6 +55,7 @@ public class NpcData {
         this.y = m.y;
         this.currentHp = m.currentHp;
         this.maxHp = m.maxHp;
+        this.attackPower = m.attackPower;
         this.isDefeated = m.isDefeated;
     }
 

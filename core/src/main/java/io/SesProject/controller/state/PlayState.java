@@ -27,7 +27,7 @@ public class PlayState implements GameState {
 
             // Usiamo il controller (nuovo o recuperato dalla cache)
             // Avvia la musica di esplorazione (poiché il CombatState l'aveva cambiata)
-            game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
+            game.getSystemFacade().getAudioManager().playMusic("music/exploration_music.wav");
 
             game.changeController(game.getActiveGameController());
 

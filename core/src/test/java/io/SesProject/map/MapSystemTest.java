@@ -1,4 +1,3 @@
-package io.SesProject.map;
 
 import io.SesProject.model.game.map.GameMap;
 import io.SesProject.model.game.map.Layer;
@@ -43,7 +42,7 @@ public class MapSystemTest {
     public void testLayerOrdering() {
         gameMap.addLayer(playerLayer);  // z-order 1
         gameMap.addLayer(terrainLayer); // z-order 0
-        
+
         // Layers should be sorted by z-order
         assertEquals("terrain", gameMap.getLayers().get(0).getName());
         assertEquals("player", gameMap.getLayers().get(1).getName());
@@ -53,11 +52,11 @@ public class MapSystemTest {
     public void testGetLayerByName() {
         gameMap.addLayer(terrainLayer);
         gameMap.addLayer(playerLayer);
-        
+
         Layer found = gameMap.getLayer("terrain");
         assertNotNull(found);
         assertEquals("terrain", found.getName());
-        
+
         Layer notFound = gameMap.getLayer("nonexistent");
         assertNull(notFound);
     }
@@ -77,10 +76,10 @@ public class MapSystemTest {
     public void testLayerChildren() {
         Tile tile1 = new Tile(0, 0, 32, 32, null, true);
         Tile tile2 = new Tile(32, 0, 32, 32, null, false);
-        
+
         terrainLayer.addChild(tile1);
         terrainLayer.addChild(tile2);
-        
+
         assertEquals(2, terrainLayer.getChildren().size());
     }
 
@@ -88,11 +87,11 @@ public class MapSystemTest {
     public void testGetSolidTiles() {
         Tile solidTile = new Tile(0, 0, 32, 32, null, true);
         Tile nonSolidTile = new Tile(32, 0, 32, 32, null, false);
-        
+
         terrainLayer.addChild(solidTile);
         terrainLayer.addChild(nonSolidTile);
         gameMap.addLayer(terrainLayer);
-        
+
         var solidTiles = gameMap.getSolidTiles();
         assertEquals(1, solidTiles.size());
         assertTrue(solidTiles.get(0).isSolid());
@@ -102,7 +101,7 @@ public class MapSystemTest {
     public void testTileSetSolid() {
         Tile tile = new Tile(0, 0, 32, 32, null, false);
         assertFalse(tile.isSolid());
-        
+
         tile.setSolid(true);
         assertTrue(tile.isSolid());
     }
@@ -111,7 +110,7 @@ public class MapSystemTest {
     public void testLayerZOrder() {
         assertEquals(0, terrainLayer.getZOrder());
         assertEquals(1, playerLayer.getZOrder());
-        
+
         terrainLayer.setZOrder(5);
         assertEquals(5, terrainLayer.getZOrder());
     }

@@ -39,6 +39,7 @@ public class FriendlyNpc extends NpcEntity {
 
                 // Avvia il dialogo (questo gestirà endDialogState alla chiusura della finestra)
                 screen.showNpcDialog(this.data, false);
+                gc.getGame().getSystemFacade().getAudioManager().playSound("music/sfx/encounter/02_Heal_02.wav" , gc.getGame().getSystemFacade().getAssetManager());
             }
 
         } else {
@@ -47,6 +48,7 @@ public class FriendlyNpc extends NpcEntity {
 
             if (screen != null) {
                 screen.showMessage("Rifiuto", getName() + " ti guarda con disprezzo e non parla.");
+                gc.getGame().getSystemFacade().getAudioManager().playSound("music/sfx/encounter/02_Heal_02.wav" , gc.getGame().getSystemFacade().getAssetManager());
             }
 
             // [FIX CRITICO]
