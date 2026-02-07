@@ -12,7 +12,7 @@ public class LoginController extends BaseController {
 
     public LoginController(RpgGame game, AuthService authService) {
         super(game, authService);
-        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
+        //game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
 
     }
 

@@ -225,19 +225,6 @@ public class CombatController extends BaseController {
         return false;
     }
 
-//    private boolean checkLoseCondition() {
-//        boolean allDead = true;
-//        for (Combatant h : heroes) {
-//            if (h.getCurrentHp() > 0) allDead = false;
-//        }
-//        if (allDead) {
-//            System.out.println("[COMBAT] GAME OVER...");
-//            game.changeAppState(new PlayState());
-//            return true;
-//        }
-//        return false;
-//    }
-
     private boolean checkLoseCondition() {
         // Controlla se tutti gli eroi sono morti
         boolean allDead = true;

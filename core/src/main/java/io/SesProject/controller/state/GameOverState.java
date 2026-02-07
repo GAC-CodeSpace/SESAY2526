@@ -11,6 +11,7 @@ public class GameOverState implements GameState {
 
         // 1. Suono/Musica drammatica (Opzionale)
         // game.getSystemFacade().getAudioManager().playMusic("music/gameover.ogg");
+        game.getSystemFacade().getAudioManager().playMusic("music/sfx/battle/Game_Over_2.wav");
 
         // 2. Attiva il Controller specifico
         GameOverController controller = new GameOverController(game, game.getAuthService());

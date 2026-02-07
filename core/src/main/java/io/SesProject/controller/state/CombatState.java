@@ -20,7 +20,7 @@ public class CombatState implements GameState{
     @Override
     public void enter(RpgGame game) {
         System.out.println("[STATE] Entering Combat Mode");
-        //game.getSystemFacade().getAudioManager().playMusic("music/battle_theme.ogg");
+        game.getSystemFacade().getAudioManager().playMusic("music/battle_music.wav");
 
         // Passiamo il nemico specifico al Controller
         CombatController combatController = new CombatController(

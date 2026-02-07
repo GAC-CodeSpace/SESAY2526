@@ -14,8 +14,8 @@ public abstract class NpcEntity extends GameObject {
         this.data = data;
         this.x = data.getX();
         this.y = data.getY();
-        this.width = 32;
-        this.height = 32;
+        //this.width = 32;
+        //this.height = 32;
         this.setMovementStrategy(data.getMovementStrategy());
     }
 

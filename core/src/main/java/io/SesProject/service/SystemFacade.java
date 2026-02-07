@@ -25,6 +25,9 @@ public class SystemFacade {
         assetManager.load("music/sfx/menu/001_Hover_01.wav", Sound.class);
         assetManager.load("music/sfx/menu/070_Equip_10.wav", Sound.class);
         assetManager.load("music/sfx/menu/071_Unequip_01.wav", Sound.class);
+        assetManager.load("music/sfx/playerWalk/03_Step_grass_03.wav" , Sound.class);
+        assetManager.load("music/sfx/battle/Game_Over_2.wav" , Sound.class);
+        assetManager.load("music/sfx/encounter/02_Heal_02.wav" , Sound.class);
 
 
         assetManager.load("uiskin.json", Skin.class);

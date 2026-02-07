@@ -49,7 +49,7 @@ public class GameController extends BaseController {
 
         initializeGame();
 
-        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
+        game.getSystemFacade().getAudioManager().playMusic("music/exploration_music.wav");
     }
 
     private void initializeGame() {
@@ -60,13 +60,13 @@ public class GameController extends BaseController {
         }
 
         // --- 1. SETUP PLAYERS ---
-        PlayerEntity p1 = new PlayerEntity(session.getP1());
+        PlayerEntity p1 = new PlayerEntity(session.getP1() , game);
         worldEntities.add(p1);
         activePlayers.add(p1);
         inputStrategies.add(new KeyboardInputStrategy(p1,
             Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D));
 
-        PlayerEntity p2 = new PlayerEntity(session.getP2());
+        PlayerEntity p2 = new PlayerEntity(session.getP2() , game);
         worldEntities.add(p2);
         activePlayers.add(p2);
         inputStrategies.add(new KeyboardInputStrategy(p2,
