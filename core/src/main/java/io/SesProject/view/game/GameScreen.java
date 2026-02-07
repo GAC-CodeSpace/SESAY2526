@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -149,29 +150,82 @@ public class GameScreen extends BaseMenuScreen {
             if (controller.getMapController() != null) {
                 GameMap map = controller.getMapController().getCurrentMap();
                 if (map != null) {
+                    try{
+                    // Get actual map bounds (excluding empty tiles)
+                    Rectangle actualBounds = map.getActualBounds();
+                    float mapWidthPixels = actualBounds.width;
+                    float mapHeightPixels = actualBounds.height;
+                    float mapOffsetX = actualBounds.x;
+                    float mapOffsetY = actualBounds.y;
+
+                    // Get screen dimensions
+                    float screenWidth = stage.getViewport().getWorldWidth();
+                    float screenHeight = stage.getViewport().getWorldHeight();
+
+                    // Calculate scale to fit map on screen while maintaining aspect ratio
+                    float scaleX = screenWidth / mapWidthPixels;
+                    float scaleY = screenHeight / mapHeightPixels;
+                    float scale = Math.min(scaleX, scaleY) * 0.9f; // 90% to leave some margin
+
+                    // Calculate scaled dimensions
+                    float scaledMapWidth = mapWidthPixels * scale;
+                    float scaledMapHeight = mapHeightPixels * scale;
+
+                    // Calculate offset to center the scaled map
+                    float offsetX = (screenWidth - scaledMapWidth) / 2f - (mapOffsetX * scale);
+                    float offsetY = (screenHeight - scaledMapHeight) / 2f - (mapOffsetY * scale);
+
+                    // Debug logging
+                    System.out.println("[GameScreen] Actual map bounds: " + actualBounds);
+                    System.out.println("[GameScreen] Map dimensions: " + mapWidthPixels + "x" + mapHeightPixels);
+                    System.out.println("[GameScreen] Screen dimensions: " + screenWidth + "x" + screenHeight);
+                    System.out.println("[GameScreen] Scale: " + scale);
+                    System.out.println("[GameScreen] Final offset: (" + offsetX + ", " + offsetY + ")");
+
+                    // Apply transformation: translate then scale
+                    stage.getBatch().getTransformMatrix().idt(); // Reset matrix
+                    stage.getBatch().getTransformMatrix().translate(offsetX, offsetY, 0);
+                    stage.getBatch().getTransformMatrix().scale(scale, scale, 1);
+
                     map.render((SpriteBatch) stage.getBatch());
+
+                    // Keep the transformation applied for entities - they use the same transform
+                } catch (Exception e) {
+                    System.err.println("[GameScreen] Error rendering map: " + e.getMessage());
+                    // Reset transform matrix to prevent corruption
+                    stage.getBatch().getTransformMatrix().idt();
+                }
                 }
             }
 
             // Then render entities on top of the map
-            for (GameObject obj : controller.getWorldEntities()) {
-                // Recupera stato e dati
-                VisualState state = obj.getVisualState();
-                float stateTime = obj.getStateTime();
-                String spriteName = obj.getSpriteName(); // Metodo polimorfico
+            try {
+                for (GameObject obj : controller.getWorldEntities()) {
+                    // Recupera stato e dati
+                    VisualState state = obj.getVisualState();
+                    float stateTime = obj.getStateTime();
+                    String spriteName = obj.getSpriteName(); // Metodo polimorfico
 
-                // Flyweight
-                Animation<TextureRegion> anim = spriteFactory.getAnimation(spriteName, state);
+                    // Flyweight
+                    Animation<TextureRegion> anim = spriteFactory.getAnimation(spriteName, state);
 
-                if (anim != null) {
-                    TextureRegion currentFrame = anim.getKeyFrame(stateTime, true);
+                    if (anim != null) {
+                        TextureRegion currentFrame = anim.getKeyFrame(stateTime, true);
 
-                    // Disegna usando le dimensioni logiche dell'oggetto
-                    stage.getBatch().draw(currentFrame, obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
+                        // Disegna usando le dimensioni logiche dell'oggetto
+                        stage.getBatch().draw(currentFrame, obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
+                    }
                 }
+            } catch (Exception e) {
+                System.err.println("[GameScreen] Error rendering entities: " + e.getMessage());
+            } finally {
+                // Always reset transformation matrix for UI rendering
+                stage.getBatch().getTransformMatrix().idt();
             }
+
             stage.getBatch().end();
         }
+
 
         // 3. Rendering della UI (Sopra il mondo)
         // IMPORTANTE: act(delta) fa funzionare le animazioni UI e gli input dei bottoni
