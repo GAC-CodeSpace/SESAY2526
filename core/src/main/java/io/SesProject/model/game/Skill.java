@@ -3,6 +3,7 @@ package io.SesProject.model.game;
 
 import io.SesProject.model.game.combat.Combatant;
 import io.SesProject.model.game.combat.skillsStrategy.SkillStrategy;
+import java.util.List;
 
 public class Skill {
     private String name;
@@ -22,11 +23,10 @@ public class Skill {
         return currentCooldown <= 0;
     }
 
-    public void use(Combatant user, Combatant target) {
+    public void use(Combatant user, Combatant target, List<Combatant> context) {
         if (behavior != null) {
-            behavior.perform(user, target);
+            behavior.execute(user, target, context);
         }
-        // Applica il cooldown dopo l'uso
         this.currentCooldown = maxCooldown;
     }
 
