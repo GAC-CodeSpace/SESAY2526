@@ -34,15 +34,20 @@ public class GameController extends BaseController {
     // Map controller for managing the game map
     private MapController mapController;
 
-    private boolean warnedNoSolidTiles = false;
-
+    // --- INTEGRATO DA GameController1: Gestione posizioni precedenti per collisioni ---
     private float prevX1, prevY1;  // Player 1 previous position
-    private float prevX2, prevY2;
+    private float prevX2, prevY2;  // Player 2 previous position
+
+    // Debug flags
+    private boolean warnedNoSolidTiles = false;
     private static final boolean DEBUG_COLLISIONS = false;
+    // --------------------------------------------------------------------------------
+
     // Flag per bloccare input durante le interazioni
     private boolean isDialogActive = false;
     private PlayerCharacter playerInDialog;
-    // NUOVO: Riferimento all'ultima entità con cui abbiamo parlato/combattuto
+
+    // Riferimento all'ultima entità con cui abbiamo parlato/combattuto
     private NpcEntity lastInteractedNpc = null;
 
     public GameController(RpgGame game, AuthService authService) {
@@ -54,7 +59,8 @@ public class GameController extends BaseController {
 
         initializeGame();
 
-        game.getSystemFacade().getAudioManager().playMusic("music/exploration_music.wav");
+        // INTEGRATO: Usiamo la musica definita in GameController1 (o puoi mantenere exploration_music)
+        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
     }
 
     private void initializeGame() {
@@ -63,15 +69,19 @@ public class GameController extends BaseController {
             System.err.println("[ERROR] Nessuna sessione attiva!");
             return;
         }
+
+        // INTEGRATO: Caricamento esplicito del livello
         mapController.loadLevel("Dungeon1/Dungeon_1.tmx");
+
         // --- 1. SETUP PLAYERS ---
-        PlayerEntity p1 = new PlayerEntity(session.getP1() , game);
+        // Nota: Mantengo il costruttore (session, game) del tuo GameController originale
+        PlayerEntity p1 = new PlayerEntity(session.getP1(), game);
         worldEntities.add(p1);
         activePlayers.add(p1);
         inputStrategies.add(new KeyboardInputStrategy(p1,
             Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D));
 
-        PlayerEntity p2 = new PlayerEntity(session.getP2() , game);
+        PlayerEntity p2 = new PlayerEntity(session.getP2(), game);
         worldEntities.add(p2);
         activePlayers.add(p2);
         inputStrategies.add(new KeyboardInputStrategy(p2,
@@ -102,7 +112,9 @@ public class GameController extends BaseController {
             generatedNpcs.add(dungeonFactory.createNpc(700, 450));
 
             NpcFactory bossFactory = new BossFactory(1);
-            generatedNpcs.add(bossFactory.createNpc(1000, 500));
+            // Usiamo le coordinate di GameController1 (più bilanciate per la mappa caricata)
+            // oppure quelle originali se preferisci
+            generatedNpcs.add(bossFactory.createNpc(400, 300));
 
             for (NpcEntity npc : generatedNpcs) {
                 worldEntities.add(npc);
@@ -133,29 +145,22 @@ public class GameController extends BaseController {
         for (InputStrategy s : inputStrategies) s.handleInput();
 
         // 3. Logica di Reset "Cooldown" Interazione
-        // Controlliamo se ci siamo allontanati dall'ultimo NPC
         if (lastInteractedNpc != null) {
             boolean stillColliding = false;
             for (PlayerEntity player : activePlayers) {
-                // Usiamo una versione leggermente più larga dell'overlap per sicurezza,
-                // o il checkOverlap standard
                 if (checkOverlap(player, lastInteractedNpc)) {
                     stillColliding = true;
                     break;
                 }
             }
 
-            // Se non stiamo più toccando l'NPC, "dimentichiamo" l'interazione
-            // permettendo di parlarci di nuovo se ci riavviciniamo
             if (!stillColliding) {
                 System.out.println("[INTERACTION] Reset per: " + lastInteractedNpc.getName());
                 lastInteractedNpc = null;
             }
         }
 
-        // 4. Update fisico entità
-        for (GameObject obj : worldEntities) obj.update(delta);
-        // salva posizione
+        // --- INTEGRATO DA GameController1: 4. Save previous positions before update ---
         if (activePlayers.size() > 0) {
             prevX1 = activePlayers.get(0).getX();
             prevY1 = activePlayers.get(0).getY();
@@ -165,11 +170,13 @@ public class GameController extends BaseController {
             prevY2 = activePlayers.get(1).getY();
         }
 
+        // 5. Update fisico entità
         for (GameObject obj : worldEntities) obj.update(delta);
-        // 5. Verifica Collisioni (una sola volta per frame è sufficiente)
+
+        // 6. Verifica Collisioni (una sola volta per frame è sufficiente)
         checkCollisions();
 
-        // 6. Rimozione nemici morti
+        // 7. Rimozione nemici morti
         worldEntities.removeIf(obj -> {
             if (obj instanceof NpcEntity) {
                 return ((NpcEntity) obj).isDefeated();
@@ -177,13 +184,13 @@ public class GameController extends BaseController {
             return false;
         });
 
-        // 7. System Input
+        // 8. System Input
         handleSystemInput();
     }
 
     private void checkCollisions() {
         for (PlayerEntity playerEntity : activePlayers) {
-            // Check collisions with map tiles first
+            // Check collisions with map tiles first (Using logic from GameController1)
             checkMapCollisions(playerEntity);
 
             for (GameObject obj : worldEntities) {
@@ -203,13 +210,10 @@ public class GameController extends BaseController {
                         // 2. Salviamo il riferimento
                         this.lastInteractedNpc = npc;
 
-                        // --- CORREZIONE CRITICA ---
-                        // Impostiamo il flag a TRUE *PRIMA* di chiamare interact.
-                        // Così se l'NPC decide di chiudere subito (es. karma negativo),
-                        // la sua chiamata a endDialogState() sarà l'ultima a essere eseguita.
+                        // 3. Blocchiamo dialog state
                         this.isDialogActive = true;
 
-                        // 3. Avviamo l'interazione
+                        // 4. Avviamo l'interazione
                         npc.interact(game, playerEntity);
 
                         return;
@@ -227,7 +231,8 @@ public class GameController extends BaseController {
     }
 
     /**
-     * Checks collisions between a player and map tiles
+     * Checks collisions between a player and map tiles.
+     * INTEGRATO DA GameController1: Usa prevX/prevY per evitare di rimanere incastrati.
      */
     private void checkMapCollisions(PlayerEntity player) {
         if (mapController == null || mapController.getSolidTiles() == null) {
@@ -252,9 +257,7 @@ public class GameController extends BaseController {
             prevX = prevX2;
             prevY = prevY2;
         } else {
-            // Player not found in list, shouldn't happen but handle gracefully
-            System.err.println("[COLLISION] Warning: Player not found in activePlayers list");
-            // Stop velocity as a safety measure
+            // Player not found or extra player
             player.setVelocity(0, 0);
             return;
         }
@@ -269,7 +272,7 @@ public class GameController extends BaseController {
                     ));
                 }
 
-                // Collision response: revert player to previous position
+                // INTEGRATO: Collision response -> revert player to previous position
                 player.setPosition(prevX, prevY);
                 // Also stop velocity to prevent stuttering
                 player.setVelocity(0, 0);
@@ -290,7 +293,6 @@ public class GameController extends BaseController {
             obj.getY() + obj.getHeight() > tileY;
     }
 
-
     public void setPlayerInDialog(PlayerCharacter pc) {
         this.playerInDialog = pc;
     }
@@ -305,7 +307,7 @@ public class GameController extends BaseController {
         }
     }
 
-// --- Metodi per la gestione del Dialogo (Chiamati dalla View) ---
+    // --- Metodi per la gestione del Dialogo (Chiamati dalla View) ---
 
     public void startDialogState() {
         this.isDialogActive = true;
@@ -314,7 +316,6 @@ public class GameController extends BaseController {
     public void endDialogState() {
         this.isDialogActive = false;
     }
-
 
     public void handleDialogChoice(boolean isGoodChoice) {
         // Controllo di sicurezza
@@ -327,7 +328,7 @@ public class GameController extends BaseController {
             System.out.println("[KARMA] Scelta buona. " + playerInDialog.getName() + " guadagna Karma.");
             playerInDialog.modifyKarma(5);
 
-            // --- NUOVA LOGICA: RICOMPENSA ITEM ---
+            // Ricompensa
             giveRewardBasedOnArchetype(playerInDialog);
 
         } else {
@@ -353,13 +354,9 @@ public class GameController extends BaseController {
         Item reward = null;
         String archetipo = player.getArchetype();
 
-        // Logica di assegnazione
-        // Nota: Assumo che "Warrior" sia la stringa esatta salvata nel player
         if ("Warrior".equalsIgnoreCase(archetipo)) {
-            // Genera un'arma casuale o specifica
             reward = new WeaponFactory("Sword").createItem();
         } else {
-            // Per Mago o altri: Genera una Skill
             reward = new SkillItemFactory("Benedizione Antica").createItem();
         }
 
@@ -367,7 +364,7 @@ public class GameController extends BaseController {
             player.addItem(reward);
             System.out.println("[REWARD] Assegnato oggetto: " + reward.getName() + " a " + player.getName());
 
-            // Opzionale: Feedback sonoro per l'acquisizione oggetto
+            // Suono reward
             game.getSystemFacade().getAudioManager().playSound("music/sfx/menu/070_Equip_10.wav", game.getSystemFacade().getAssetManager());
         }
     }
@@ -381,16 +378,10 @@ public class GameController extends BaseController {
         return this.game;
     }
 
-    /**
-     * Gets the map controller
-     */
     public MapController getMapController() {
         return mapController;
     }
 
-    /**
-     * Loads a level by filename
-     */
     public void loadLevel(String filename) {
         if (mapController != null) {
             mapController.loadLevel(filename);
