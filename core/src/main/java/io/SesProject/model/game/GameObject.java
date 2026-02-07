@@ -24,14 +24,15 @@ public abstract class GameObject {
 
     public GameObject() {
         this.movementBehavior = new StaticStrategy();
-        this.width = 32;  // Dimensione del quadrato
-        this.height = 32;
+        this.width = 24;  // Dimensione del quadrato
+        this.height = 24;
     }
 
     public void update(float delta) {
         // Esegue il movimento fisico
         if (movementBehavior != null) {
             movementBehavior.move(this, delta);
+
         }
 
         // Aggiorna timer animazione

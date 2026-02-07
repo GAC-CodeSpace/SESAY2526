@@ -28,6 +28,7 @@ public class HostileNpc extends NpcEntity{
             // Mostra dialogo Ostile (isHostile = true)
             // L'utente dovrà cliccare "COMBATTI" per avviare la battaglia reale
             screen.showNpcDialog(this.data, true);
+            game.getSystemFacade().getAudioManager().playSound("music/sfx/encounter/02_Heal_02.wav" , game.getSystemFacade().getAssetManager());
         }
     }
 }
