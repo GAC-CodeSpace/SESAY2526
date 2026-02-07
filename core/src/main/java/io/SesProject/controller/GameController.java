@@ -71,7 +71,7 @@ public class GameController extends BaseController {
         }
 
         // INTEGRATO: Caricamento esplicito del livello
-        mapController.loadLevel("Dungeon1/Dungeon_1.tmx");
+        mapController.loadLevel("primo_villaggio/primo_villaggio.tmx");
 
         // --- 1. SETUP PLAYERS ---
         // Nota: Mantengo il costruttore (session, game) del tuo GameController originale
