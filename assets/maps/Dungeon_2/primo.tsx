@@ -31,18 +31,6 @@
    <property name="calpestabile" type="bool" value="false"/>
   </properties>
  </tile>
- <tile id="54">
-  <properties>
-   <property name="calpestabile" type="bool" value="false"/>
-  </properties>
- </tile>
- <tile id="55">
-  <properties>
-   <property name="calpestabile" type="bool" value="true"/>
-   <property name="nextMap" value="Dungeon1/Dungeon_1.tmx"/>
-   <property name="transition" type="bool" value="true"/>
-  </properties>
- </tile>
  <tile id="96" type="Casa">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
@@ -166,7 +154,7 @@
  </tile>
  <tile id="241" type="Terreno">
   <properties>
-   <property name="calpestabile" type="bool" value="false"/>
+   <property name="calpestabile" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="242" type="Terreno">
