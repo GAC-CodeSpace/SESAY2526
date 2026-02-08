@@ -28,7 +28,7 @@ import io.SesProject.model.menu.MenuComponent;
             Label titleLabel = new Label("CONFIGURAZIONE PARTITA", skin);
             rootTable.add(titleLabel).padBottom(30).row();
 
-
+            // Label dinamica che mostra chi fa cosa
             statusLabel = new Label("", skin);
             updateStatusText();
             rootTable.add(statusLabel).padBottom(40).row();

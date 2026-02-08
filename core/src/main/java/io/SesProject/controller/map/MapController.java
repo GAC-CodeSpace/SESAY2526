@@ -65,6 +65,16 @@ public class MapController {
         }
         return null;
     }
+
+    /**
+     * Gets all transition tiles from the current map for map transitions
+     */
+    public List<Tile> getTransitionTiles() {
+        if (currentMap != null) {
+            return currentMap.getTransitionTiles();
+        }
+        return null;
+    }
     
     /**
      * Updates the map (if needed for animated tiles, etc.)
