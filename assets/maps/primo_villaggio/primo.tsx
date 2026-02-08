@@ -36,6 +36,12 @@
    <property name="calpestabile" type="bool" value="false"/>
   </properties>
  </tile>
+ <tile id="55">
+  <properties>
+   <property name="calpestabile" type="bool" value="false"/>
+   <property name="nextMap" value="Dungeon1/Dungeon_1.tmx"/>
+  </properties>
+ </tile>
  <tile id="96" type="Casa">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
