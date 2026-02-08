@@ -47,7 +47,7 @@ public class GameMap {
      */
     public int getMapWidthPixels() {
         if (mapWidthInTiles == 0) {
-            System.err.println("[GameMap] Warning: Map dimensions not set, returning default");
+            System.err.println("[GameMap] Warning: Map dimensions a not set, returning default");
             return DEFAULT_MAP_WIDTH_PIXELS;
         }
         return mapWidthInTiles * tileWidth;
@@ -58,7 +58,7 @@ public class GameMap {
      */
     public int getMapHeightPixels() {
         if (mapHeightInTiles == 0) {
-            System.err.println("[GameMap] Warning: Map dimensions not set, returning default");
+            System.err.println("[GameMap] Warning: Map dimensions b not set, returning default");
             return DEFAULT_MAP_HEIGHT_PIXELS;
         }
         return mapHeightInTiles * tileHeight;
@@ -122,6 +122,30 @@ public class GameMap {
 
         for (MapComponent child : component.getChildren()) {
             collectSolidTiles(child, result);
+        }
+    }
+
+    /**
+     * Gets all transition tiles for map transitions
+     */
+    public List<Tile> getTransitionTiles() {
+        List<Tile> transitionTiles = new ArrayList<>();
+        for (Layer layer : layers) {
+            collectTransitionTiles(layer, transitionTiles);
+        }
+        return transitionTiles;
+    }
+
+    private void collectTransitionTiles(MapComponent component, List<Tile> result) {
+        if (component instanceof Tile) {
+            Tile tile = (Tile) component;
+            if (tile.isTransition()) {
+                result.add(tile);
+            }
+        }
+
+        for (MapComponent child : component.getChildren()) {
+            collectTransitionTiles(child, result);
         }
     }
 

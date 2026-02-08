@@ -27,7 +27,7 @@ public class RoleSelectionController extends BaseController {
     private MenuComponent buildMenuTree() {
         MenuComposite root = new MenuComposite("SELEZIONE RUOLI");
 
-
+        // Usiamo le lambda per definire l'azione direttamente qui
         root.add(new MenuItem("SCAMBIA RUOLI", () -> {
             this.isP1Tank = !this.isP1Tank;
             System.out.println("[LOG] Switch ruoli: P1 Tank = " + isP1Tank);
@@ -49,10 +49,10 @@ public class RoleSelectionController extends BaseController {
         SystemFacade facade = game.getSystemFacade();
         String currentProfile = game.getCurrentUser().getUsername();
 
-
+        // Passiamo isP1Tank al costruttore della sessione
         GameSession initialSession = new GameSession(this.isP1Tank);
 
-
+        // Il Memento salverà i PlayerCharacter già configurati con la classe corretta
         Memento snapshot = initialSession.save();
 
         int newSlotId = facade.getSaveService().createNewSaveSlot(snapshot, currentProfile);

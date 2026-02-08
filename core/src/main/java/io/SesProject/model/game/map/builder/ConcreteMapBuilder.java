@@ -112,6 +112,7 @@ public class ConcreteMapBuilder implements MapBuilder {
         int tileHeight = (int) tiledLayer.getTileHeight();
 
         int solidTileCount = 0;
+        int transitionTileCount = 0;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -131,17 +132,38 @@ public class ConcreteMapBuilder implements MapBuilder {
                         }
                     }
 
+                    // Check for transition properties
+                    boolean isTransition = false;
+                    String nextMap = null;
+                    
+                    if (props.containsKey("transition")) {
+                        Object transitionValue = props.get("transition");
+                        if (transitionValue instanceof Boolean) {
+                            isTransition = (Boolean) transitionValue;
+                        } else if (transitionValue instanceof Integer) {
+                            isTransition = ((Integer) transitionValue) == 1;
+                        }
+                    }
+                    
+                    if (props.containsKey("nextMap")) {
+                        nextMap = props.get("nextMap", String.class);
+                    }
+                    
+                    if (isTransition && nextMap != null) {
+                        transitionTileCount++;
+                    }
+
                     // Create Tile with world coordinates
                     float worldX = x * tileWidth;
                     float worldY = y * tileHeight;
-                    Tile tile = new Tile(worldX, worldY, tileWidth, tileHeight, textureRegion, isSolid);
+                    Tile tile = new Tile(worldX, worldY, tileWidth, tileHeight, textureRegion, isSolid, isTransition, nextMap);
                     layer.addChild(tile);
                 }
             }
         }
 
-        System.out.println(String.format("[MapBuilder] Layer '%s': %d solid tiles found",
-            layer.getName(), solidTileCount));
+        System.out.println(String.format("[MapBuilder] Layer '%s': %d solid tiles found, %d transition tiles found",
+            layer.getName(), solidTileCount, transitionTileCount));
     }
 
     @Override

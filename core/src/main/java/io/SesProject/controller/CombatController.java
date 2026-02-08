@@ -23,7 +23,6 @@ import io.SesProject.service.AuthService;
 import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.game.combat.CombatScreen;
-import io.SesProject.view.game.combat.StatusEffect;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,13 +59,6 @@ public class CombatController extends BaseController {
         this.random = new Random();
 
         initializeEncounter();
-    }
-
-    private List<Combatant> getFullContext() {
-        List<Combatant> all = new ArrayList<>();
-        all.addAll(heroes);
-        all.addAll(enemies);
-        return all;
     }
 
     private void initializeEncounter() {
@@ -141,22 +133,12 @@ public class CombatController extends BaseController {
         return root;
     }
 
-    // --- LOGICA GESTIONE TURNI AGGIORNATA ---
+    // --- LOGICA GESTIONE TURNI ---
     private void startTurn() {
         this.currentActor = turnQueue.get(turnIndex);
-
-        // 1. Tick cooldown e aggiornamento durata effetti
         this.currentActor.tickCooldowns();
-        this.currentActor.updateEffects();
 
         if (currentActor.getCurrentHp() <= 0) {
-            nextTurn();
-            return;
-        }
-
-        // 2. CONTROLLO CONGELAMENTO: Se è stordito, salta il turno
-        if (currentActor.isStunned()) {
-            System.out.println("[TURN] " + currentActor.getName() + " è congelato e salta il turno!");
             nextTurn();
             return;
         }
@@ -194,15 +176,16 @@ public class CombatController extends BaseController {
         // Target: Primo nemico
         Combatant target = enemies.get(0);
 
-        skill.use(currentActor, target, getFullContext());
+        skill.use(currentActor, target);
 
         if (!checkWinCondition()) {
             nextTurn();
         }
     }
 
-    // --- AI NEMICA CON PROVOCAZIONE ---
+    // --- AI NEMICA AGGIORNATA ---
     private void simulateEnemyTurn() {
+        // 1. Filtra gli eroi vivi
         List<Combatant> aliveHeroes = heroes.stream()
             .filter(h -> h.getCurrentHp() > 0)
             .collect(Collectors.toList());
@@ -212,29 +195,19 @@ public class CombatController extends BaseController {
             return;
         }
 
-        Combatant target = null;
-
-        // CONTROLLO PROVOCAZIONE: Il nemico deve colpire chi lo ha provocato
-        for (StatusEffect e : currentActor.getActiveEffects()) {
-            if ("TAUNT".equals(e.getType()) && e.getSource() != null && e.getSource().getCurrentHp() > 0) {
-                target = e.getSource();
-                System.out.println("[AI] Provocazione attiva! " + currentActor.getName() + " deve attaccare " + target.getName());
-                break;
-            }
-        }
-
-        // Se non è provocato, sceglie casuale
-        if (target == null) {
-            target = aliveHeroes.get(random.nextInt(aliveHeroes.size()));
-        }
+        // 2. NUOVO: Scegli un bersaglio CASUALE tra quelli vivi
+        Combatant target = aliveHeroes.get(random.nextInt(aliveHeroes.size()));
 
         System.out.println("[AI] " + currentActor.getName() + " attacca " + target.getName());
 
-        // Audio ed esecuzione danno
         SystemFacade facade = game.getSystemFacade();
         facade.getAudioManager().playSound("music/sfx/battle/03_Claw_03.wav", facade.getAssetManager());
 
-        target.takeDamage(currentActor.getAttackPower());
+        // 3. NUOVO: Danno variabile basato sulla potenza del nemico
+        int damage = currentActor.getAttackPower();
+        // (Opzionale: aggiungi una variazione casuale, es. damage +/- 2)
+
+        target.takeDamage(damage);
 
         if (!checkLoseCondition()) {
             nextTurn();

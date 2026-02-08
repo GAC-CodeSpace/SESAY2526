@@ -13,6 +13,8 @@ public class Tile extends MapComponent {
     private boolean solid;
     private int width;
     private int height;
+    private boolean transition;
+    private String nextMap;
 
     public Tile(float x, float y, int width, int height, TextureRegion texture, boolean solid) {
         super(x, y);
@@ -20,6 +22,18 @@ public class Tile extends MapComponent {
         this.height = height;
         this.texture = texture;
         this.solid = solid;
+        this.transition = false;
+        this.nextMap = null;
+    }
+
+    public Tile(float x, float y, int width, int height, TextureRegion texture, boolean solid, boolean transition, String nextMap) {
+        super(x, y);
+        this.width = width;
+        this.height = height;
+        this.texture = texture;
+        this.solid = solid;
+        this.transition = transition;
+        this.nextMap = nextMap;
     }
 
     @Override
@@ -52,5 +66,21 @@ public class Tile extends MapComponent {
 
     public void setTexture(TextureRegion texture) {
         this.texture = texture;
+    }
+
+    public boolean isTransition() {
+        return transition;
+    }
+
+    public void setTransition(boolean transition) {
+        this.transition = transition;
+    }
+
+    public String getNextMap() {
+        return nextMap;
+    }
+
+    public void setNextMap(String nextMap) {
+        this.nextMap = nextMap;
     }
 }

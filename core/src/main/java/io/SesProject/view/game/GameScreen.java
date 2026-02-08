@@ -26,33 +26,60 @@ public class GameScreen extends BaseMenuScreen {
     private GameController controller;
     private SpriteFlyweightFactory spriteFactory;
 
+    // 🎯 AGGIUNTO: Camera dedicata per il rendering del gioco con zoom
     private OrthographicCamera gameCamera;
+
+    // 🎯 AGGIUNTO: Batch separato per il mondo di gioco (mappa + entità)
+    private SpriteBatch worldBatch;
+
     public GameScreen(GameController controller) {
         super();
         this.controller = controller;
         // Inizializza la factory passandogli la facade
         this.spriteFactory = new SpriteFlyweightFactory(controller.getGame().getSystemFacade());
 
-        //camera dedicata al gioco
-        gameCamera= new OrthographicCamera();
+        // 🎯 Crea un batch separato per il mondo di gioco
+        this.worldBatch = new SpriteBatch();
+
+        // 🎯 Crea una camera dedicata per il gioco
+        gameCamera = new OrthographicCamera();
         gameCamera.setToOrtho(false, stage.getViewport().getWorldWidth(), stage.getViewport().getWorldHeight());
-        //zoom >1 = zoom indietro, <1 = zoom avanti
-        gameCamera.zoom=0.6f;
-        //centra la camera
-        try{
-            if(controller.getMapController() != null && controller.getMapController().getCurrentMap() != null){
+
+        // 🎯 MODIFICATO: Zoom dinamico basato sul nome della mappa
+        float zoomLevel = 0.6f; // Valore di default
+
+        // 🎯 AGGIUNGI: Centra la camera sulla mappa e imposta lo zoom
+        try {
+            if (controller.getMapController() != null && controller.getMapController().getCurrentMap() != null) {
                 GameMap map = controller.getMapController().getCurrentMap();
+                String mapName = map.getMapName();
+
+                // 🎯 Decidi lo zoom in base al nome della mappa
+                if (mapName != null) {
+                    if (mapName.contains("primo_villaggio")) {
+                        zoomLevel = 0.6f; // Zoom per primo_villaggio
+                    } else if (mapName.contains("Dungeon_1")) {
+                        zoomLevel = 0.8f; // Zoom per Dungeon_1
+                    }
+                    System.out.println("[GameScreen] Setting zoom " + zoomLevel + " for map: " + mapName);
+                }
+
                 Rectangle bounds = map.getActualBounds();
-                //posiziona la camera al centro
+
+                // Posiziona la camera al centro della mappa
                 gameCamera.position.set(
-                    bounds.x +bounds.width/2f, bounds.y + bounds.height/2f,0
+                    bounds.x + bounds.width / 2f,
+                    bounds.y + bounds.height / 2f,
+                    0
                 );
             }
         } catch (Exception e) {
-            System.err.println("[GameScreen] could not center camera on map: "+e.getMessage());
+            System.err.println("[GameScreen] Could not center camera on map: " + e.getMessage());
         }
 
+        gameCamera.zoom = zoomLevel;
         gameCamera.update();
+
         // Imposta l'input processor subito
         Gdx.input.setInputProcessor(stage);
 
@@ -162,31 +189,35 @@ public class GameScreen extends BaseMenuScreen {
         if (controller != null) {
             controller.update(delta);
 
-            // 2. Rendering del Mondo (Dietro la UI)
-            stage.getBatch().begin();
-            // Imposta la matrice corretta per disegnare nel mondo
-            stage.getBatch().setProjectionMatrix(gameCamera.combined);
-            stage.getBatch().setColor(Color.WHITE);
+            // 2. Rendering del Mondo (Dietro la UI) - Usa worldBatch separato
+            worldBatch.begin();
+
+            // 🎯 MODIFICATO: Usa la gameCamera con lo zoom
+            worldBatch.setProjectionMatrix(gameCamera.combined);
+            worldBatch.setColor(Color.WHITE);
 
             // Render the map first (lowest z-depth)
             if (controller.getMapController() != null) {
                 GameMap map = controller.getMapController().getCurrentMap();
                 if (map != null) {
                     try{
-                        map.render((SpriteBatch) stage.getBatch());
-                } catch (Exception e) {
-                    System.err.println("[GameScreen] Error rendering map: " + e.getMessage());
-                }
+                        map.render(worldBatch);
+                    } catch (Exception e) {
+                        System.err.println("[GameScreen] Error rendering map: " + e.getMessage());
+                    }
                 }
             }
 
-            // Then render entities on top of the map
+// IMPORTANTE: Non cambiare la projection matrix qui!
+// Gli sprite usano la STESSA projection matrix della mappa
+
+// Then render entities on top of the map
             try {
                 for (GameObject obj : controller.getWorldEntities()) {
                     // Recupera stato e dati
                     VisualState state = obj.getVisualState();
                     float stateTime = obj.getStateTime();
-                    String spriteName = obj.getSpriteName(); // Metodo polimorfico
+                    String spriteName = obj.getSpriteName();
 
                     // Flyweight
                     Animation<TextureRegion> anim = spriteFactory.getAnimation(spriteName, state);
@@ -195,17 +226,15 @@ public class GameScreen extends BaseMenuScreen {
                         TextureRegion currentFrame = anim.getKeyFrame(stateTime, true);
 
                         // Disegna usando le dimensioni logiche dell'oggetto
-                        stage.getBatch().draw(currentFrame, obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
+                        worldBatch.draw(currentFrame, obj.getX(), obj.getY(), obj.getWidth(), obj.getHeight());
                     }
                 }
             } catch (Exception e) {
                 System.err.println("[GameScreen] Error rendering entities: " + e.getMessage());
-            } finally {
-                // Always reset transformation matrix for UI rendering
-                stage.getBatch().getTransformMatrix().idt();
             }
 
-            stage.getBatch().end();
+
+            worldBatch.end();
         }
 
 
@@ -215,31 +244,94 @@ public class GameScreen extends BaseMenuScreen {
         stage.draw();
     }
 
+    // 🎯 AGGIUNTO: Gestisci il resize per mantenere lo zoom
     @Override
-    public void resize(int width, int height){
-        super.resize(width,height);
+    public void resize(int width, int height) {
+        super.resize(width, height);
 
-        if(gameCamera!=null){
-            gameCamera.setToOrtho(false, stage.getViewport().getWorldWidth(),stage.getViewport().getWorldHeight());
-            gameCamera.zoom=0.6f;
+        // Aggiorna anche la gameCamera quando la finestra viene ridimensionata
+        if (gameCamera != null) {
+            gameCamera.setToOrtho(false, stage.getViewport().getWorldWidth(), stage.getViewport().getWorldHeight());
 
-            try{
-                if(controller.getMapController() != null && controller.getMapController().getCurrentMap() != null){
+            // 🎯 MODIFICATO: Ricalcola lo zoom in base alla mappa corrente
+            float zoomLevel = 0.6f;
+
+            try {
+                if (controller.getMapController() != null && controller.getMapController().getCurrentMap() != null) {
                     GameMap map = controller.getMapController().getCurrentMap();
+                    String mapName = map.getMapName();
+
+                    if (mapName != null) {
+                        if (mapName.contains("primo_villaggio")) {
+                            zoomLevel = 0.6f;
+                        } else if (mapName.contains("Dungeon_1")) {
+                            zoomLevel = 0.8f;
+                        }
+                    }
+
                     Rectangle bounds = map.getActualBounds();
 
                     gameCamera.position.set(
-                        bounds.x+ bounds.width/2f,bounds.y + bounds.height/2f,0
+                        bounds.x + bounds.width / 2f,
+                        bounds.y + bounds.height / 2f,
+                        0
                     );
                 }
             } catch (Exception e) {
-                System.err.println("[GameScreen] could not center camera on resize: "+ e.getMessage());
+                System.err.println("[GameScreen] Could not center camera on resize: " + e.getMessage());
             }
+
+            gameCamera.zoom = zoomLevel;
             gameCamera.update();
         }
     }
+    /**
+     * 🎯 AGGIUNTO: Aggiorna lo zoom della camera quando viene caricata una nuova mappa
+     */
+    public void updateCameraForCurrentMap() {
+        if (gameCamera == null) return;
 
+        float zoomLevel = 0.6f; // Default
+
+        try {
+            if (controller.getMapController() != null && controller.getMapController().getCurrentMap() != null) {
+                GameMap map = controller.getMapController().getCurrentMap();
+                String mapName = map.getMapName();
+
+                if (mapName != null) {
+                    if (mapName.contains("primo_villaggio")) {
+                        zoomLevel = 0.6f;
+                    } else if (mapName.contains("Dungeon_1")) {
+                        zoomLevel = 0.8f;
+                    }
+                    System.out.println("[GameScreen] Updating zoom to " + zoomLevel + " for map: " + mapName);
+                }
+
+                Rectangle bounds = map.getActualBounds();
+
+                // Riposiziona la camera al centro della nuova mappa
+                gameCamera.position.set(
+                    bounds.x + bounds.width / 2f,
+                    bounds.y + bounds.height / 2f,
+                    0
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("[GameScreen] Could not update camera: " + e.getMessage());
+        }
+
+        gameCamera.zoom = zoomLevel;
+        gameCamera.update();
+    }
     public GameController getController() {
         return this.controller;
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (worldBatch != null) {
+            worldBatch.dispose();
+        }
     }
 }
