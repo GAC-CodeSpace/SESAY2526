@@ -34,6 +34,12 @@ public class StandardNpcBuilder implements NpcBuilder{
     }
 
     @Override
+    public void buildRewards(int xpReward, int karmaReward) {
+        npc.setXpReward(xpReward);
+        npc.setKarmaReward(karmaReward);
+    }
+
+    @Override
     public void buildInteraction(String dialogue) {
         npc.setDialogue(dialogue);
     }

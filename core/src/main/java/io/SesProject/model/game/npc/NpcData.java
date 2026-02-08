@@ -23,6 +23,9 @@ public class NpcData {
     private int attackPower;
     private MovementStrategy movementStrategy;
 
+    private int xpReward;
+    private int karmaReward;
+
     public NpcData() {
         // Valori di default
         this.movementStrategy = new StaticStrategy();
@@ -42,6 +45,8 @@ public class NpcData {
         m.maxHp = this.maxHp;
         m.attackPower = this.attackPower;
         m.isDefeated = this.isDefeated; // Fondamentale!
+        m.xpReward = this.xpReward;
+        m.karmaReward = this.karmaReward;
         return m;
     }
 
@@ -57,6 +62,8 @@ public class NpcData {
         this.maxHp = m.maxHp;
         this.attackPower = m.attackPower;
         this.isDefeated = m.isDefeated;
+        this.xpReward = m.xpReward;
+        this.karmaReward = m.karmaReward;
     }
 
     // Setters (usati dal Builder)
@@ -87,4 +94,8 @@ public class NpcData {
     public int getCurrentHp() { return currentHp; }
     public MovementStrategy getMovementStrategy() { return movementStrategy; }
     public int getAttackPower() { return attackPower; }
+    public int getXpReward() { return xpReward; }
+    public int getKarmaReward() { return karmaReward; }
+    public void setXpReward(int xp) { this.xpReward = xp; }
+    public void setKarmaReward(int karma) { this.karmaReward = karma; }
 }

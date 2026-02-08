@@ -11,6 +11,7 @@ public interface NpcBuilder {
     void buildCombatStats(boolean hostile, int hp , int attackPower);
     void buildInteraction(String dialogue);
     void buildBehavior(MovementStrategy behavior);
+    void buildRewards(int xpReward, int karmaReward);
 
     NpcData getResult();
 }

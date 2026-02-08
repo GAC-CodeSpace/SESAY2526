@@ -15,7 +15,8 @@ public class PlayerCharacter {
 
     private String name;
     private String archetype;
-    private int level;
+    private int level = 1;
+    private int experience = 0;
     private int hp;
     private int maxHp;
     private int baseMaxHp = 100;
@@ -81,6 +82,7 @@ public class PlayerCharacter {
         m.level = this.level;
         m.hp = this.hp;
         m.maxHp = this.maxHp;
+        m.experience = this.experience;
         m.x = this.x;
         m.y = this.y;
         m.karma = this.karma;
@@ -118,6 +120,7 @@ public class PlayerCharacter {
         this.x = m.x;
         this.y = m.y;
         this.karma = m.karma;
+        this.experience = m.experience;
 
         // Ripristino Inventario
         this.inventory.clear();
@@ -207,6 +210,51 @@ public class PlayerCharacter {
         notifyObservers();
     }
 
+    /**
+     * Calculates XP needed for next level using formula: 20 * (2^(level-1))
+     * Level 1→2: 20 XP, Level 2→3: 40 XP, Level 3→4: 80 XP, etc.
+     */
+    public int getXpForNextLevel() {
+        return 20 * (int)Math.pow(2, level - 1);
+    }
+
+    /**
+     * Adds experience points and checks for level ups.
+     * @return true if player leveled up, false otherwise
+     */
+    public boolean addExperience(int xp) {
+        this.experience += xp;
+        System.out.println("[XP] " + name + " gained " + xp + " XP. Total: " + this.experience);
+
+        boolean leveledUp = checkLevelUp();
+        if (leveledUp) {
+            notifyObservers();
+        }
+        return leveledUp;
+    }
+
+    /**
+     * Checks if player has enough XP to level up and processes level ups.
+     * @return true if at least one level up occurred
+     */
+    private boolean checkLevelUp() {
+        boolean didLevelUp = false;
+
+        while (this.experience >= getXpForNextLevel()) {
+            this.experience -= getXpForNextLevel();
+            this.level++;
+            didLevelUp = true;
+
+            System.out.println("[LEVEL UP] " + name + " reached Level " + this.level + "!");
+
+            // Bonus HP on level up (optional)
+            this.baseMaxHp += 10;
+            recalculateStats();
+        }
+
+        return didLevelUp;
+    }
+
     // --- GETTERS & SETTERS ---
     public void addItem(Item item) { inventory.add(item); }
     public List<Item> getInventory() { return inventory; }
@@ -228,4 +276,7 @@ public class PlayerCharacter {
     public void setPosition(float x, float y) { this.x = x; this.y = y; }
     public String getArchetype() { return archetype; }
     public int getKarma() { return karma; }
+    public int getLevel() { return level; }
+    public int getExperience() { return experience; }
+
 }

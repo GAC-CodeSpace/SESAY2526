@@ -78,7 +78,19 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
         titleLabel.setColor(Color.YELLOW); // Un tocco di colore per il titolo
         panel.add(titleLabel).padBottom(5).row();
 
-        // 2. Stats - Riga 1: HP
+        // 2. Level Display
+        String levelStr = "Livello: " + pc.getLevel();
+        Label levelLabel = new Label(levelStr, skin);
+        levelLabel.setColor(Color.GOLD);
+        panel.add(levelLabel).padBottom(2).row();
+
+        // 3. XP Progress
+        String xpStr = "XP: " + pc.getExperience() + " / " + pc.getXpForNextLevel();
+        Label xpLabel = new Label(xpStr, skin);
+        xpLabel.setColor(Color.CYAN);
+        panel.add(xpLabel).padBottom(2).row();
+
+        // 4. Stats - Riga 1: HP
         // Usiamo un colore diverso se la vita è bassa (opzionale ma carino)
         String hpStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp();
         Label hpLabel = new Label(hpStr, skin);

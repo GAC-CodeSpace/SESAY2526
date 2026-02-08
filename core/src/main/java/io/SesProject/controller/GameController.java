@@ -64,7 +64,7 @@ public class GameController extends BaseController {
         initializeGame();
 
         // INTEGRATO: Usiamo la musica definita in GameController1 (o puoi mantenere exploration_music)
-        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
+        game.getSystemFacade().getAudioManager().playMusic("music/exploration_music.wav");
     }
 
     private void initializeGame() {

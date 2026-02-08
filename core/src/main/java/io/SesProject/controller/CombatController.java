@@ -10,8 +10,11 @@ import io.SesProject.controller.command.Command;
 import io.SesProject.controller.command.combatCommand.UseSkillCommand;
 import io.SesProject.controller.state.GameOverState;
 import io.SesProject.controller.state.PlayState;
+import io.SesProject.controller.state.VictoryState;
 import io.SesProject.model.GameSession;
+import io.SesProject.model.PlayerCharacter;
 import io.SesProject.model.game.Skill;
+import io.SesProject.model.game.combat.CombatReward;
 import io.SesProject.model.game.combat.Combatant;
 import io.SesProject.model.game.combat.EnemyCombatant;
 import io.SesProject.model.game.combat.PlayerCombatant;
@@ -42,6 +45,7 @@ public class CombatController extends BaseController {
 
     // --- DATI SPECIFICI ---
     private NpcData specificEnemyData;
+    private CombatReward combatReward;
 
     // Utilità per il random
     private Random random;
@@ -241,12 +245,43 @@ public class CombatController extends BaseController {
         }
     }
 
-    // --- CONDIZIONI ---
     private boolean checkWinCondition() {
         if (enemies.get(0).getCurrentHp() <= 0) {
             System.out.println("[COMBAT] VITTORIA!");
             this.specificEnemyData.setDefeated(true);
-            game.changeAppState(new PlayState());
+
+            // Calculate rewards from defeated enemy
+            int xpGained = specificEnemyData.getXpReward();
+            int karmaGained = specificEnemyData.getKarmaReward();
+
+            System.out.println("[REWARDS] XP: " + xpGained + ", Karma: " + karmaGained);
+
+            // Create reward object
+            combatReward = new CombatReward(xpGained, karmaGained);
+
+            // Distribute rewards to both players
+            GameSession session = game.getCurrentSession();
+            PlayerCharacter p1 = session.getP1();
+            PlayerCharacter p2 = session.getP2();
+
+            // Add XP and check for level ups
+            boolean p1LeveledUp = p1.addExperience(xpGained);
+            boolean p2LeveledUp = p2.addExperience(xpGained);
+
+            if (p1LeveledUp) {
+                combatReward.addLevelUp(p1.getName());
+            }
+            if (p2LeveledUp) {
+                combatReward.addLevelUp(p2.getName());
+            }
+
+            // Add Karma
+            p1.modifyKarma(karmaGained);
+            p2.modifyKarma(karmaGained);
+
+            // Transition to Victory Screen
+            game.changeAppState(new VictoryState(combatReward));
+
             return true;
         }
         return false;
@@ -290,5 +325,9 @@ public class CombatController extends BaseController {
 
     public boolean isPlayerTurn() {
         return currentActor instanceof PlayerCombatant;
+    }
+
+    public CombatReward getCombatReward() {
+        return combatReward;
     }
 }

@@ -49,6 +49,7 @@ public class NpcDirector {
         builder.buildIdentity(template.name, template.spriteName);
         builder.buildCombatStats(true, template.maxHp , template.attackPower);
         builder.buildPosition(x, y);
+        builder.buildRewards(template.xpReward, template.karmaReward);
 
         // Distinzione dialogo Boss vs Minion (basata sul nome o HP)
         if (template.name.contains("Gigante")) {
