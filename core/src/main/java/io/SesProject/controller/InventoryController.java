@@ -4,12 +4,10 @@ import com.badlogic.gdx.audio.Sound;
 import io.SesProject.RpgGame;
 import io.SesProject.controller.command.InventoryCommand.EquipItemCommand;
 import io.SesProject.controller.command.InventoryCommand.UnequipItemCommand;
+import io.SesProject.controller.command.InventoryCommand.UsePowerUpCommand;
 import io.SesProject.model.GameSession;
 import io.SesProject.model.PlayerCharacter;
-import io.SesProject.model.game.item.factory.ArmorFactory;
-import io.SesProject.model.game.item.factory.Item;
-import io.SesProject.model.game.item.factory.SkillItemFactory;
-import io.SesProject.model.game.item.factory.WeaponFactory;
+import io.SesProject.model.game.item.factory.*;
 import io.SesProject.model.menu.MenuComponent;
 import io.SesProject.model.menu.MenuComposite;
 import io.SesProject.model.menu.MenuItem;
@@ -17,6 +15,8 @@ import io.SesProject.service.AuthService;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.InventoryScreen;
 
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class InventoryController extends BaseController {
@@ -55,7 +55,7 @@ public class InventoryController extends BaseController {
         Item wpn = pc.getEquippedWeapon();
         String wpnText = "[Arma] " + (wpn != null ? wpn.getName() : "Vuoto");
         equipSection.add(new MenuItem(wpnText,
-            wpn != null ? new UnequipItemCommand(pc, wpn, this) : null)); // Passiamo 'this'
+            wpn != null ? new UnequipItemCommand(pc, wpn, this) : null));
 
         // Armatura
         Item arm = pc.getEquippedArmor();
@@ -79,8 +79,15 @@ public class InventoryController extends BaseController {
         } else {
             for (Item item : pc.getInventory()) {
                 String txt = item.getName() + " (" + item.getStatDescription() + ")";
-                backpackSection.add(new MenuItem(txt,
-                    new EquipItemCommand(this, pc, item))); // Passiamo 'this'
+
+                // LOGICA MODIFICATA:
+                // Controlliamo se l'oggetto è un PowerUp consumabile
+                if (item instanceof PowerUpItem) {
+
+                    backpackSection.add(new MenuItem(txt, new UsePowerUpCommand(this, pc, item)));
+                } else {
+                    backpackSection.add(new MenuItem(txt, new EquipItemCommand(this, pc, item)));
+                }
             }
         }
 
@@ -111,7 +118,44 @@ public class InventoryController extends BaseController {
         System.out.println("[INV] Oggetto rimosso: " + item.getName());
     }
 
+    public void usePowerUp(PlayerCharacter pc, Item powerUp) {
+        // Creiamo una lista che contiene TUTTO ciò che il player indossa
+        List<Item> equipaggiamentoPotenziabile = new ArrayList<>();
 
+        if (pc.getEquippedWeapon() != null) equipaggiamentoPotenziabile.add(pc.getEquippedWeapon());
+        if (pc.getEquippedArmor() != null) equipaggiamentoPotenziabile.add(pc.getEquippedArmor());
+        equipaggiamentoPotenziabile.addAll(pc.getEquippedSkills());
+
+        if (equipaggiamentoPotenziabile.isEmpty()) {
+            System.out.println("Non hai nulla di equipaggiato da potenziare!");
+            return;
+        }
+
+        // Ora il menu mostrerà sia la Spada che l'Armatura che le Skill
+        MenuComposite choiceMenu = new MenuComposite("QUALE OGGETTO POTENZIARE?");
+
+        for (Item oggetto : equipaggiamentoPotenziabile) {
+            choiceMenu.add(new MenuItem(oggetto.getName() + " (Attuale: " + oggetto.getValue() + ")", () -> {
+
+                // Applichiamo il bonus (funziona sia per l'attacco dell'arma che per la difesa dell'armatura)
+                oggetto.setValue(oggetto.getValue() + powerUp.getValue());
+
+                // Rimuoviamo il consumabile
+                pc.getInventory().remove(powerUp);
+
+                // IMPORTANTE: Ricalcoliamo le statistiche (se hai potenziato l'armatura, gli HP devono salire!)
+                pc.recalculateStats();
+
+                System.out.println("Potenziato " + oggetto.getName() + " a " + oggetto.getValue());
+            }));
+        }
+
+        // Visualizza il menu di scelta nel pannello del giocatore corretto
+        if (game.getScreen() instanceof InventoryScreen) {
+            ((InventoryScreen) game.getScreen()).updateMenuRoot(choiceMenu, pc);
+        }
+
+    }
 
     // --- VIEW & NAVIGAZIONE ---
 

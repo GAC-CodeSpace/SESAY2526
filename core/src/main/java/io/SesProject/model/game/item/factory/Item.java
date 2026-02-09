@@ -34,4 +34,8 @@ public abstract class Item {
 
     // Metodo per descrizione breve nella UI
     public abstract String getStatDescription();
+
+    public void setValue(int newValue) {
+        this.value = newValue;
+    }
 }
