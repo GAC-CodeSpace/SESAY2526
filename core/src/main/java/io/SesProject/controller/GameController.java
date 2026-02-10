@@ -17,6 +17,7 @@ import io.SesProject.model.game.item.factory.Item;
 import io.SesProject.model.game.item.factory.PowerUpItem;
 import io.SesProject.model.game.item.factory.SkillItemFactory;
 import io.SesProject.model.game.item.factory.WeaponFactory;
+import io.SesProject.model.game.map.GameMap;
 import io.SesProject.model.game.map.Tile;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.npc.factory.*;
@@ -76,7 +77,7 @@ public class GameController extends BaseController {
         }
 
         // INTEGRATO: Caricamento esplicito del livello
-        mapController.loadLevel("primo_villaggio/primo_villaggio.tmx");
+        mapController.loadLevel("casa/casa.tmx");
 
         // --- 1. SETUP PLAYERS ---
         // Nota: Mantengo il costruttore (session, game) del tuo GameController originale
@@ -93,6 +94,7 @@ public class GameController extends BaseController {
             Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT));
         p2.setPosition(550, 320);
 
+         positionPlayersAtSpawn(p1,p2);
         // --- 2. SETUP NPC ---
         if (!session.getWorldNpcs().isEmpty()) {
             System.out.println("[GAME] Caricamento NPC da salvataggio...");
@@ -105,30 +107,104 @@ public class GameController extends BaseController {
                 }
             }
         } else {
-            System.out.println("[GAME] Generazione nuovi NPC...");
-            List<NpcEntity> generatedNpcs = new ArrayList<>();
-
-            VillageNpcFactory villageFactory = new VillageNpcFactory();
-            generatedNpcs.add(villageFactory.createVillager(200, 300));
-            generatedNpcs.add(villageFactory.createMerchant(350, 300));
-            generatedNpcs.add(villageFactory.createSolider(450 , 300));
-
-            NpcFactory dungeonFactory = new DungeonEnemyFactory(1);
-            generatedNpcs.add(dungeonFactory.createNpc(600, 500));
-            generatedNpcs.add(dungeonFactory.createNpc(700, 450));
-
-            NpcFactory bossFactory = new BossFactory(1);
-            // Usiamo le coordinate di GameController1 (più bilanciate per la mappa caricata)
-            // oppure quelle originali se preferisci
-            generatedNpcs.add(bossFactory.createNpc(400, 300));
-
-            for (NpcEntity npc : generatedNpcs) {
-                worldEntities.add(npc);
-                session.addNpc(npc.getData());
-            }
+            System.out.println("[GAME] Generazione NPC dalla mappa...");
+            spawnNpcsFromMap();
         }
     }
 
+    private void spawnNpcsFromMap() {
+        GameSession session = game.getCurrentSession();
+        GameMap currentMap = mapController.getCurrentMap();
+
+        if (currentMap == null) {
+            System.err.println("[GAME] No map loaded for NPC spawning");
+            return;
+        }
+
+        // 1. Spawn friendly NPCs
+        List<Tile> npcSpawns = mapController.getSpawnTilesByType("npc");
+        System.out.println("[GAME] Found " + npcSpawns.size() + " NPC spawn points in map");
+
+        VillageNpcFactory villageFactory = new VillageNpcFactory();
+
+        for (Tile spawn : npcSpawns) {
+            String npcName = spawn.getNpcName();
+
+            // Skip if npcName is null or empty
+            if (npcName == null || npcName.isEmpty()) {
+                System.err.println("[GAME] NPC spawn at (" + spawn.getPosition().x + ", " + spawn.getPosition().y + ") has no npcName");
+                continue;
+            }
+
+            float x = spawn.getPosition().x;
+            float y = spawn.getPosition().y;
+
+            NpcEntity npc = null;
+
+            switch (npcName.toLowerCase()) {
+                case "villico":
+                    npc = villageFactory.createVillager(x, y);
+                    break;
+                case "mercante":
+                    npc = villageFactory.createMerchant(x, y);
+                    break;
+                case "soldato":
+                    npc = villageFactory.createSolider(x, y);
+                    break;
+                default:
+                    System.err.println("[GAME] Unknown NPC type: " + npcName);
+                    continue;
+            }
+
+            if (npc != null) {
+                worldEntities.add(npc);
+                session.addNpc(npc.getData());
+                System.out.println("[GAME] Spawned NPC: " + npcName + " at (" + x + ", " + y + ")");
+            }
+        }
+
+        // 2. Spawn enemies
+        List<Tile> enemySpawns = mapController.getSpawnTilesByType("enemy");
+        System.out.println("[GAME] Found " + enemySpawns.size() + " enemy spawn points in map");
+
+        for (Tile spawn : enemySpawns) {
+            int level = spawn.getSpawnId(); // Use spawnId as enemy level
+            float x = spawn.getPosition().x;
+            float y = spawn.getPosition().y;
+            String enemyType = spawn.getNpcName(); // "boss" or empty for regular enemies
+
+            NpcFactory enemyFactory;
+
+            if ("boss".equalsIgnoreCase(enemyType)) {
+                enemyFactory = new BossFactory(level);
+            } else {
+                enemyFactory = new DungeonEnemyFactory(level);
+            }
+
+            NpcEntity enemy = enemyFactory.createNpc(x, y);
+            worldEntities.add(enemy);
+            session.addNpc(enemy.getData());
+            System.out.println("[GAME] Spawned enemy level " + level + " at (" + x + ", " + y + ")");
+        }
+    }
+
+    public void onMapChanged() {
+        System.out.println("[GAME] Map changed - Reloading NPCs...");
+
+        GameSession session = game.getCurrentSession();
+
+        // Remove all current NPCs from world entities
+        worldEntities.removeIf(obj -> obj instanceof NpcEntity);
+
+        // CRITICAL FIX: Clear NPCs from the session to prevent them from being reloaded on wrong maps
+        if (session != null) {
+            session.getWorldNpcs().clear();
+            System.out.println("[GAME] Cleared NPC data from session");
+        }
+
+        // Respawn NPCs from the new map only (based on spawn tiles)
+        spawnNpcsFromMap();
+    }
     @Override
     protected BaseMenuScreen createView() {
         return new GameScreen(this);
@@ -366,6 +442,14 @@ public class GameController extends BaseController {
                     // Carica la nuova mappa
                     mapController.loadLevel(nextMap);
 
+                    // Reload NPCs for the new map
+                    onMapChanged();
+
+                    // Riposiziona tutti i player dopo la transizione
+                    if (activePlayers.size() >= 2) {
+                        positionPlayersAtSpawn(activePlayers.get(0), activePlayers.get(1));
+                    }
+
 // 🎯 AGGIUNTO: Aggiorna la camera nella GameScreen per la nuova mappa
                     if (game.getScreen() instanceof GameScreen) {
                         ((GameScreen) game.getScreen()).updateCameraForCurrentMap();
@@ -488,6 +572,65 @@ public class GameController extends BaseController {
     public void loadLevel(String filename) {
         if (mapController != null) {
             mapController.loadLevel(filename);
+        }
+    }
+
+    private void positionPlayersAtSpawn(PlayerEntity p1, PlayerEntity p2) {
+        if (mapController == null || mapController.getCurrentMap() == null) {
+            System.out.println("[SPAWN] No map loaded, using default positions");
+            return;
+        }
+
+        GameMap currentMap = mapController.getCurrentMap();
+        String previousMap = mapController.getPreviousMapName();
+
+        // Try to spawn based on transition first
+        if (previousMap != null && !previousMap.isEmpty()) {
+            System.out.println("[SPAWN] Looking for transition spawn from: " + previousMap);
+            Tile transitionSpawn = currentMap.getSpawnFromMap(previousMap);
+
+            if (transitionSpawn != null) {
+                float spawnX = transitionSpawn.getPosition().x;
+                float spawnY = transitionSpawn.getPosition().y;
+                System.out.println(String.format("[SPAWN] Found transition spawn at (%.1f, %.1f)", spawnX, spawnY));
+
+                // Position both players at the same transition spawn point
+                p1.setPosition(spawnX, spawnY);
+                p2.setPosition(spawnX, spawnY);
+
+                System.out.println(String.format("[SPAWN] Player 1 positioned at (%.1f, %.1f)",
+                    p1.getX(), p1.getY()));
+                System.out.println(String.format("[SPAWN] Player 2 positioned at (%.1f, %.1f)",
+                    p2.getX(), p2.getY()));
+                return;
+            } else {
+                System.out.println("[SPAWN] No transition spawn found for map: " + previousMap);
+            }
+        }
+
+        // Try to spawn at player spawn points
+        System.out.println("[SPAWN] Looking for player spawn points");
+        Tile player1Spawn = currentMap.getPlayerSpawnById(1);
+        Tile player2Spawn = currentMap.getPlayerSpawnById(2);
+
+        if (player1Spawn != null) {
+            float spawnX = player1Spawn.getPosition().x;
+            float spawnY = player1Spawn.getPosition().y;
+            p1.setPosition(spawnX, spawnY);
+            System.out.println(String.format("[SPAWN] Player 1 spawned at player spawn (%.1f, %.1f)",
+                spawnX, spawnY));
+        } else {
+            System.out.println("[SPAWN] No spawn point found for Player 1, using default position");
+        }
+
+        if (player2Spawn != null) {
+            float spawnX = player2Spawn.getPosition().x;
+            float spawnY = player2Spawn.getPosition().y;
+            p2.setPosition(spawnX, spawnY);
+            System.out.println(String.format("[SPAWN] Player 2 spawned at player spawn (%.1f, %.1f)",
+                spawnX, spawnY));
+        } else {
+            System.out.println("[SPAWN] No spawn point found for Player 2, using default position");
         }
     }
 }
