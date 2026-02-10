@@ -456,6 +456,32 @@
    <property name="calpesttabile" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="833">
+  <properties>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="nextMap" value="Prima_caverna/prima_caverna.tmx"/>
+   <property name="transition" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="834">
+  <properties>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="nextMap" value="Sala_Boss/Sala_Boss.tmx"/>
+   <property name="transition" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="835">
+  <properties>
+   <property name="fromMap" value="Prima_caverna/prima_caverna.tmx"/>
+   <property name="spawnType" value="transition_target"/>
+  </properties>
+ </tile>
+ <tile id="836">
+  <properties>
+   <property name="fromMap" value="Sala_Boss/Sala_Boss.tmx"/>
+   <property name="spawnType" value="transition_target"/>
+  </properties>
+ </tile>
  <tile id="837" type="Decorazione">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>

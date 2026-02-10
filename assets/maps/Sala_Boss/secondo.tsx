@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="secondo" tilewidth="16" tileheight="16" tilecount="1024" columns="64">
- <image source="../png/atlas (1).png" width="1024" height="256"/>
+ <image source="png/atlas (1).png" width="1024" height="256"/>
  <tile id="64" type="Terreno">
   <properties>
    <property name="calpestabile" type="bool" value="true"/>
@@ -144,6 +144,13 @@
  <tile id="262" type="Decorazione">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
+  </properties>
+ </tile>
+ <tile id="263">
+  <properties>
+   <property name="enemyLevel" type="int" value="1"/>
+   <property name="npcName" value="boss"/>
+   <property name="spawnType" value="enemy"/>
   </properties>
  </tile>
  <tile id="320" type="Terreno">
@@ -454,6 +461,19 @@
  <tile id="832" type="Terreno">
   <properties>
    <property name="calpesttabile" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="833">
+  <properties>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="nextMap" value="Dungeon1/Dungeon_1.tmx"/>
+   <property name="transition" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="834">
+  <properties>
+   <property name="fromMap" value="Dungeon1/Dungeon_1.tmx"/>
+   <property name="spawnType" value="transition_target"/>
   </properties>
  </tile>
  <tile id="837" type="Decorazione">
