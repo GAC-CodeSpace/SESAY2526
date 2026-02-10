@@ -13,6 +13,8 @@ public class PlayerCharacterMemento {
     public int level;
     public int hp;
     public int maxHp;
+    public int karma;
+    public int experience;
     public float x, y;
 
     public List<ItemMemento> inventory = new ArrayList<>();

@@ -1,6 +1,7 @@
 package io.SesProject.model.game.npc.factory;
 
 
+import io.SesProject.model.game.movementStrategy.RandomMovementStrategy;
 import io.SesProject.model.game.npc.EnemyTemplate;
 import io.SesProject.model.game.npc.NpcData;
 import io.SesProject.model.game.npc.builder.NpcBuilder;
@@ -28,9 +29,10 @@ public class BossFactory extends NpcFactory {
         EnemyTemplate template = Bestiary.getBossForLevel(levelId);
 
         // 2. Costruisce usando la ricetta del Boss
-        director.constructBossFromTemplate(builder, x, y, template);
+        director.constructEnemyFromTemplate(builder, x, y, template);
 
         NpcData data = builder.getResult();
+        data.setMovementStrategy(new RandomMovementStrategy());
 
         return new HostileNpc(data);
     }

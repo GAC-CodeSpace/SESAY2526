@@ -11,6 +11,7 @@ import io.SesProject.model.menu.MenuComponent;
 import io.SesProject.model.menu.MenuComposite;
 import io.SesProject.model.menu.MenuItem;
 import io.SesProject.service.AuthService;
+import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.PauseMenuScreen;
 import io.SesProject.model.memento.Memento;
@@ -45,6 +46,9 @@ public class PauseMenuController extends BaseController {
         System.out.println("[CMD] Riprendi Gioco");
         // Torna al GameController. Dato che la sessione è in game.currentSession,
         // il GameController ripartirà da dove eravamo.
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         game.changeAppState(new PlayState());
     }
 
@@ -54,17 +58,35 @@ public class PauseMenuController extends BaseController {
         GameSession session = game.getCurrentSession();
         String username = game.getCurrentUser().getUsername();
 
+        // Recupera il GameController attivo per ottenere lo stato del mondo
+        GameController gameController = game.getActiveGameController();
 
-        int slotId = 1;
+        if (session == null || gameController == null) {
+            System.err.println("[ERROR] Impossibile salvare: sessione o gioco non attivi.");
+            if (view instanceof PauseMenuScreen) {
+                ((PauseMenuScreen)view).showMessage("ERRORE", "Nessuna partita da salvare.");
+            }
+            return;
+        }
 
-        // 2. Creiamo il Memento
+        // --- CORREZIONE FONDAMENTALE ---
+        // 1. SINCRONIZZA: Aggiorna la GameSession con lo stato vivo del GameController
+        session.updateNpcsFromWorld(gameController.getWorldEntities());
+
+        // Ora session.getWorldNpcs() contiene solo i nemici rimasti vivi.
+
+        // 2. CREA MEMENTO: Lo snapshot ora conterrà la lista aggiornata
         Memento snapshot = session.save();
 
-        // 3. Salviamo sovrascrivendo
+        // 3. SALVA SU DISCO
+        // Recuperiamo lo slot ID della sessione
+        int slotId = session.getSaveSlotId(); // Devi aggiungere questo campo a GameSession!
+
         game.getSystemFacade().getSaveService().saveGame(snapshot, username, slotId);
 
+        // Feedback
         if (view instanceof PauseMenuScreen) {
-            ((PauseMenuScreen)view).showMessage("SALVATAGGIO", "Partita salvata con successo!");
+            ((PauseMenuScreen)view).showMessage("SALVATAGGIO", "Partita salvata nello Slot " + slotId);
         }
     }
 
@@ -76,16 +98,26 @@ public class PauseMenuController extends BaseController {
 
         // 2. CORREZIONE: Distruggi il controller attivo
         game.setActiveGameController(null);
+        SystemFacade facade = game.getSystemFacade();
 
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         // 3. Torna al menu
         game.changeController(new MainMenuController(game, authService));
     }
 
     public void goToSettings() {
         System.out.println("[CMD] Settings Selezionato (da Pausa)");
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         // Passiamo la sorgente PAUSE_MENU
         game.changeController(new SettingsController(game, authService, MenuSource.PAUSE_MENU));
     }
 
-    public void openInventory() { game.changeController(new InventoryController(game, authService)); }
+    public void openInventory() {
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
+        game.changeController(new InventoryController(game, authService));
+    }
 }

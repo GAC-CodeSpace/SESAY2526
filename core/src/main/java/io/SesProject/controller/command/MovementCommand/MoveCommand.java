@@ -2,6 +2,7 @@ package io.SesProject.controller.command.MovementCommand;
 
 import io.SesProject.controller.command.Command;
 import io.SesProject.model.game.GameObject;
+import io.SesProject.model.game.PlayerEntity;
 
 public class MoveCommand implements Command {
 
@@ -17,6 +18,9 @@ public class MoveCommand implements Command {
 
     @Override
     public void execute() {
+        if((receiver instanceof PlayerEntity) && ((PlayerEntity) receiver).getArchetype().equals("warrior")){
+            receiver.setVelocity(velocityX + 0.75f, velocityY + 0.75f);
+        }
         receiver.setVelocity(velocityX, velocityY);
     }
 }

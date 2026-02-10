@@ -65,6 +65,7 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
         refreshPlayerColumn(p2Panel, p2, "PLAYER 2");
     }
 
+
     /**
      * Ricostruisce la colonna di un giocatore usando il COMPOSITE PATTERN.
      */
@@ -72,12 +73,45 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
         panel.clear();
         panel.top();
 
-        // 1. Stats (Sempre fisse in alto, gestite dall'Observer)
-        panel.add(new Label(title + ": " + pc.getArchetype(), skin)).padBottom(5).row();
-        String statsStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp() + " | ATK: " + pc.getAttackPower();
-        panel.add(new Label(statsStr, skin)).padBottom(15).row();
+        // 1. Header (Nome e Archetipo)
+        Label titleLabel = new Label(title + ": " + pc.getArchetype(), skin);
+        titleLabel.setColor(Color.YELLOW); // Un tocco di colore per il titolo
+        panel.add(titleLabel).padBottom(5).row();
 
-        // 2. Rendering del Menu Composite
+        // 2. Level Display
+        String levelStr = "Livello: " + pc.getLevel();
+        Label levelLabel = new Label(levelStr, skin);
+        levelLabel.setColor(Color.GOLD);
+        panel.add(levelLabel).padBottom(2).row();
+
+        // 3. XP Progress
+        String xpStr = "XP: " + pc.getExperience() + " / " + pc.getXpForNextLevel();
+        Label xpLabel = new Label(xpStr, skin);
+        xpLabel.setColor(Color.CYAN);
+        panel.add(xpLabel).padBottom(2).row();
+
+        // 4. Stats - Riga 1: HP
+        // Usiamo un colore diverso se la vita è bassa (opzionale ma carino)
+        String hpStr = "HP: " + pc.getHp() + "/" + pc.getMaxHp();
+        Label hpLabel = new Label(hpStr, skin);
+        if (pc.getHp() < pc.getMaxHp() * 0.3f) hpLabel.setColor(Color.RED);
+        panel.add(hpLabel).padBottom(2).row();
+
+        // 3. Stats - Riga 2: ATK e KARMA (--- NUOVO ---)
+        // Li mettiamo sulla stessa riga per risparmiare spazio verticale
+        String statsStr = "ATK: " + pc.getAttackPower() + "  |  KARMA: " + pc.getKarma();
+        Label statsLabel = new Label(statsStr, skin);
+
+        // Feedback visivo sul Karma: Rosso se negativo, Verde se positivo, Bianco se neutro
+        if (pc.getKarma() < 0) {
+            statsLabel.setColor(new Color(1f, 0.4f, 0.4f, 1f)); // Rosso chiaro
+        } else if (pc.getKarma() > 10) { // Soglia esempio per karma "buono"
+            statsLabel.setColor(new Color(0.4f, 1f, 0.4f, 1f)); // Verde chiaro
+        }
+
+        panel.add(statsLabel).padBottom(15).row();
+
+        // 4. Rendering del Menu Composite (Invariato)
         MenuComponent menuRoot = controller.getInventoryTree(pc);
         renderCompositeTree(panel, menuRoot);
     }
@@ -150,6 +184,20 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
         // 4. RIMUOVIAMO 'THIS' DAI SOGGETTI
         if (controller.getP1() != null) controller.getP1().removeObserver(this);
         if (controller.getP2() != null) controller.getP2().removeObserver(this);
+    }
+
+    public void updateMenuRoot(MenuComponent newRoot, PlayerCharacter pc) {
+        // Identifichiamo quale pannello deve mostrare la scelta delle skill
+        Table targetPanel = (pc == controller.getP1()) ? p1Panel : p2Panel;
+        String title = (pc == controller.getP1()) ? "PLAYER 1" : "PLAYER 2";
+
+        // Puliamo il pannello e mostriamo solo il titolo e il nuovo menu di scelta
+        targetPanel.clear();
+        targetPanel.top();
+        targetPanel.add(new Label(title + " - SELEZIONE POTENZIAMENTO", skin)).padBottom(20).row();
+
+        // Disegniamo il menu di scelta (le skill) nel pannello
+        renderCompositeTree(targetPanel, newRoot);
     }
 }
 

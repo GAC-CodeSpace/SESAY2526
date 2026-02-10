@@ -4,10 +4,13 @@ package io.SesProject.model.game;
 import io.SesProject.model.game.combat.Combatant;
 import io.SesProject.model.game.combat.skillsStrategy.SkillStrategy;
 
+import java.util.List;
+
 public class Skill {
     private String name;
     private int maxCooldown;     // Turni di attesa (0 = sempre usabile)
     private int currentCooldown; // Turni rimanenti
+    private int powerBonus = 0;
 
     private SkillStrategy behavior; // Strategy
 
@@ -22,11 +25,10 @@ public class Skill {
         return currentCooldown <= 0;
     }
 
-    public void use(Combatant user, Combatant target) {
+    public void use(Combatant user, Combatant target, List<Combatant> context) {
         if (behavior != null) {
-            behavior.perform(user, target);
+            behavior.execute(user, target, context);
         }
-        // Applica il cooldown dopo l'uso
         this.currentCooldown = maxCooldown;
     }
 
@@ -35,7 +37,11 @@ public class Skill {
             currentCooldown--;
         }
     }
+    public void applyPowerUp(int amount) {
+        this.powerBonus += amount;
+    }
 
+    public int getPowerBonus() { return powerBonus; }
     public void setSkillStrategy(SkillStrategy behavior){
         this.behavior = behavior;
     }

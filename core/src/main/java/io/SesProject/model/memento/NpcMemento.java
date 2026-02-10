@@ -14,7 +14,10 @@ public class NpcMemento {
     public float x, y;
     public int currentHp;
     public int maxHp;
+    public int attackPower;
     public boolean isDefeated;
+    public int xpReward;
+    public int karmaReward;
 
     public NpcMemento() {}
 }

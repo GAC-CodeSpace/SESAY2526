@@ -2,7 +2,6 @@ package io.SesProject.model;
 
 /**
  * Rappresenta solo il PROFILO dell'utente (Identità).
- * Non contiene più HP, Livelli o Personaggi.
  */
 public class User {
 

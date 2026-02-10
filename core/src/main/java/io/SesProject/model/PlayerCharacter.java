@@ -1,5 +1,6 @@
 package io.SesProject.model;
 
+import io.SesProject.model.game.Skill;
 import io.SesProject.model.game.item.ItemType;
 import io.SesProject.model.game.item.factory.Item;
 import io.SesProject.model.game.item.factory.ItemFactory;
@@ -15,11 +16,14 @@ public class PlayerCharacter {
 
     private String name;
     private String archetype;
-    private int level;
+    private int level = 1;
+    private int experience = 0;
     private int hp;
     private int maxHp;
     private int baseMaxHp = 100;
+    private int karma;
     private int baseDamage = 5;
+
 
     // Posizione (per esplorazione)
     private float x, y;
@@ -51,6 +55,7 @@ public class PlayerCharacter {
         this.observers = new ArrayList<>();
         this.maxHp = baseMaxHp;
         this.hp = maxHp;
+        this.karma = 10;
     }
 
     public void addObserver(PlayerStatsObserver observer) {
@@ -65,7 +70,7 @@ public class PlayerCharacter {
     }
 
     // Metodo di notifica (Notify)
-    private void notifyObservers() {
+    public void notifyObservers() {
         for (PlayerStatsObserver observer : observers) {
             observer.onStatsChanged(this); // Passa se stesso come riferimento
         }
@@ -79,8 +84,10 @@ public class PlayerCharacter {
         m.level = this.level;
         m.hp = this.hp;
         m.maxHp = this.maxHp;
+        m.experience = this.experience;
         m.x = this.x;
         m.y = this.y;
+        m.karma = this.karma;
 
         // Salvataggio Inventario
         for (Item item : this.inventory) {
@@ -114,6 +121,8 @@ public class PlayerCharacter {
         this.maxHp = m.maxHp;
         this.x = m.x;
         this.y = m.y;
+        this.karma = m.karma;
+        this.experience = m.experience;
 
         // Ripristino Inventario
         this.inventory.clear();
@@ -187,7 +196,13 @@ public class PlayerCharacter {
         }
     }
 
-    private void recalculateStats() {
+    public void modifyKarma(int amount) {
+        this.karma += amount;
+        System.out.println("[STATS] Karma di " + name + " aggiornato a: " + this.karma);
+        notifyObservers();
+    }
+
+    public void recalculateStats() {
         int armorBonus = (equippedArmor != null) ? equippedArmor.getValue() : 0;
         this.maxHp = this.baseMaxHp + armorBonus;
 
@@ -195,6 +210,51 @@ public class PlayerCharacter {
 
         // NOTIFICA GLI OSSERVATORI DOPO IL CAMBIO DI STATO
         notifyObservers();
+    }
+
+    /**
+     * Calculates XP needed for next level using formula: 20 * (2^(level-1))
+     * Level 1→2: 20 XP, Level 2→3: 40 XP, Level 3→4: 80 XP, etc.
+     */
+    public int getXpForNextLevel() {
+        return 20 * (int)Math.pow(2, level - 1);
+    }
+
+    /**
+     * Adds experience points and checks for level ups.
+     * @return true if player leveled up, false otherwise
+     */
+    public boolean addExperience(int xp) {
+        this.experience += xp;
+        System.out.println("[XP] " + name + " gained " + xp + " XP. Total: " + this.experience);
+
+        boolean leveledUp = checkLevelUp();
+        if (leveledUp) {
+            notifyObservers();
+        }
+        return leveledUp;
+    }
+
+    /**
+     * Checks if player has enough XP to level up and processes level ups.
+     * @return true if at least one level up occurred
+     */
+    private boolean checkLevelUp() {
+        boolean didLevelUp = false;
+
+        while (this.experience >= getXpForNextLevel()) {
+            this.experience -= getXpForNextLevel();
+            this.level++;
+            didLevelUp = true;
+
+            System.out.println("[LEVEL UP] " + name + " reached Level " + this.level + "!");
+
+            // Bonus HP on level up (optional)
+            this.baseMaxHp += 10;
+            recalculateStats();
+        }
+
+        return didLevelUp;
     }
 
     // --- GETTERS & SETTERS ---
@@ -217,4 +277,8 @@ public class PlayerCharacter {
     public float getY() { return y; }
     public void setPosition(float x, float y) { this.x = x; this.y = y; }
     public String getArchetype() { return archetype; }
+    public int getKarma() { return karma; }
+    public int getLevel() { return level; }
+    public int getExperience() { return experience; }
+
 }

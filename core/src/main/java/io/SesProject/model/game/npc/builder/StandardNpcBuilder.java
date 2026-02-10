@@ -27,9 +27,16 @@ public class StandardNpcBuilder implements NpcBuilder{
     }
 
     @Override
-    public void buildCombatStats(boolean hostile, int hp) {
+    public void buildCombatStats(boolean hostile, int hp , int attackPower) {
         npc.setHostile(hostile);
         npc.setMaxHp(hp);
+        npc.setAttackPower(attackPower);
+    }
+
+    @Override
+    public void buildRewards(int xpReward, int karmaReward) {
+        npc.setXpReward(xpReward);
+        npc.setKarmaReward(karmaReward);
     }
 
     @Override

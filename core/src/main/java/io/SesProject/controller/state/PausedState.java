@@ -26,6 +26,6 @@ public class PausedState implements GameState {
     @Override
     public void exit(RpgGame game) {
         System.out.println("[STATE] Exiting PausedState");
-        // Ripristina volume se lo avevi abbassato
+
     }
 }

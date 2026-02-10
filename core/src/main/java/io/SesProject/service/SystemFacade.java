@@ -2,6 +2,8 @@ package io.SesProject.service;
 
 
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import io.SesProject.model.SettingsService;
 import io.SesProject.model.observer.SettingsHandler;
@@ -18,11 +20,16 @@ public class SystemFacade {
     public void initializeSystems() {
         System.out.println("[SYSTEM] Initializing Subsystems...");
 
-        // 1. Inizializza l'AssetManager
         this.assetManager = new AssetManager();
+        assetManager.load("music/sfx/battle/03_Claw_03.wav", Sound.class);
+        assetManager.load("music/sfx/menu/001_Hover_01.wav", Sound.class);
+        assetManager.load("music/sfx/menu/070_Equip_10.wav", Sound.class);
+        assetManager.load("music/sfx/menu/071_Unequip_01.wav", Sound.class);
+        assetManager.load("music/sfx/playerWalk/03_Step_grass_03.wav" , Sound.class);
+        assetManager.load("music/sfx/battle/Game_Over_2.wav" , Sound.class);
+        assetManager.load("music/sfx/encounter/02_Heal_02.wav" , Sound.class);
 
-        // Mettiamo in coda il caricamento della Skin (file pesante)
-        // Nota: Assicurati che "uiskin.json" sia nella cartella assets
+
         assetManager.load("uiskin.json", Skin.class);
 
         // Se avessimo texture del giocatore, le caricheremmo qui:

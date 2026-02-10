@@ -47,6 +47,8 @@ public class CombatantView extends Table implements CombatantObserver {
     }
 
     public void detach() {
-        subject.removeObserver(this);
+        if (subject != null) {
+            subject.removeObserver(this);
+        }
     }
 }

@@ -3,6 +3,7 @@ package io.SesProject.controller;
 
 import io.SesProject.RpgGame;
 import io.SesProject.service.AuthService;
+import io.SesProject.service.SystemFacade;
 import io.SesProject.view.BaseMenuScreen;
 import io.SesProject.view.RegisterScreen;
 
@@ -10,7 +11,7 @@ public class RegisterController extends BaseController {
 
     public RegisterController(RpgGame game, AuthService authService) {
         super(game, authService);
-        game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
+        //game.getSystemFacade().getAudioManager().playMusic("music/AdhesiveWombat-Night Shade.mp3");
     }
 
     @Override
@@ -49,6 +50,9 @@ public class RegisterController extends BaseController {
      * Torna alla schermata di Login (Annulla o Successo)
      */
     public void backToLogin() {
+        SystemFacade facade = game.getSystemFacade();
+
+        facade.getAudioManager().playSound("music/sfx/menu/001_Hover_01.wav" , facade.getAssetManager());
         game.changeController(new LoginController(game, authService));
     }
 }

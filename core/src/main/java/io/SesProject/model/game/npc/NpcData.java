@@ -20,7 +20,11 @@ public class NpcData {
     private float x, y;
     private int maxHp;
     private int currentHp;
+    private int attackPower;
     private MovementStrategy movementStrategy;
+
+    private int xpReward;
+    private int karmaReward;
 
     public NpcData() {
         // Valori di default
@@ -39,7 +43,10 @@ public class NpcData {
         m.y = this.y;
         m.currentHp = this.currentHp;
         m.maxHp = this.maxHp;
+        m.attackPower = this.attackPower;
         m.isDefeated = this.isDefeated; // Fondamentale!
+        m.xpReward = this.xpReward;
+        m.karmaReward = this.karmaReward;
         return m;
     }
 
@@ -53,7 +60,10 @@ public class NpcData {
         this.y = m.y;
         this.currentHp = m.currentHp;
         this.maxHp = m.maxHp;
+        this.attackPower = m.attackPower;
         this.isDefeated = m.isDefeated;
+        this.xpReward = m.xpReward;
+        this.karmaReward = m.karmaReward;
     }
 
     // Setters (usati dal Builder)
@@ -66,10 +76,12 @@ public class NpcData {
         this.maxHp = maxHp;
         this.currentHp = maxHp; // Default full HP
     }
+
     public void setCurrentHp(int hp) { this.currentHp = hp; }
     public void setMovementStrategy(MovementStrategy behavior) { this.movementStrategy = behavior; }
     public boolean isDefeated() { return isDefeated; }
     public void setDefeated(boolean defeated) { isDefeated = defeated; }
+    public void setAttackPower(int power) { this.attackPower = power; }
 
     // Getters (usati dalle Entità di Gioco)
     public String getName() { return name; }
@@ -81,4 +93,9 @@ public class NpcData {
     public int getMaxHp() { return maxHp; }
     public int getCurrentHp() { return currentHp; }
     public MovementStrategy getMovementStrategy() { return movementStrategy; }
+    public int getAttackPower() { return attackPower; }
+    public int getXpReward() { return xpReward; }
+    public int getKarmaReward() { return karmaReward; }
+    public void setXpReward(int xp) { this.xpReward = xp; }
+    public void setKarmaReward(int karma) { this.karmaReward = karma; }
 }
