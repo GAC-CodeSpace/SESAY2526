@@ -6,6 +6,7 @@ import io.SesProject.model.game.map.builder.ConcreteMapBuilder;
 import io.SesProject.model.game.map.builder.MapBuilder;
 import io.SesProject.model.game.map.builder.MapDirector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,49 +14,57 @@ import java.util.List;
  * Integrates the Builder and Director patterns to load maps from TMX files.
  */
 public class MapController {
-    
+
     private GameMap currentMap;
     private MapDirector director;
     private ConcreteMapBuilder builder;
-    
+    private String previousMapName;
+
     public MapController() {
         this.currentMap = null;
+        this.previousMapName = null;
     }
-    
+
     /**
      * Loads a level from a TMX file
      * @param filename The name of the TMX file (e.g., "level_1.tmx")
      */
     public void loadLevel(String filename) {
         System.out.println("[MapController] Loading level: " + filename);
-        
+
+        // Save the current map name as previous before loading new one
+        if (currentMap != null) {
+            previousMapName = currentMap.getMapName();
+            System.out.println("[MapController] Saving previous map: " + previousMapName);
+        }
+
         // Construct full path to the map file
         String mapPath = "maps/" + filename;
-        
+
         // Create builder with the TMX file path
         builder = new ConcreteMapBuilder(mapPath);
-        
+
         // Create director and build the map
         director = new MapDirector(builder);
         director.constructLevel(filename);
-        
+
         // Get the constructed map
         currentMap = builder.getResult();
-        
+
         if (currentMap != null) {
             System.out.println("[MapController] Level loaded successfully: " + currentMap.getMapName());
         } else {
             System.err.println("[MapController] Failed to load level: " + filename);
         }
     }
-    
+
     /**
      * Gets the currently loaded map
      */
     public GameMap getCurrentMap() {
         return currentMap;
     }
-    
+
     /**
      * Gets all solid tiles from the current map for collision detection
      */
@@ -75,14 +84,41 @@ public class MapController {
         }
         return null;
     }
-    
+
+    /**
+     * Gets the name of the previously loaded map
+     */
+    public String getPreviousMapName() {
+        return previousMapName;
+    }
+
+    /**
+     * Gets all spawn tiles from the current map
+     */
+    public List<Tile> getSpawnTiles() {
+        if (currentMap != null) {
+            return currentMap.getSpawnTiles();
+        }
+        return null;
+    }
+
+    /**
+     * Gets spawn tiles filtered by type (e.g., "npc", "enemy")
+     */
+    public List<Tile> getSpawnTilesByType(String spawnType) {
+        if (currentMap != null) {
+            return currentMap.getSpawnTilesByType(spawnType);
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * Updates the map (if needed for animated tiles, etc.)
      */
     public void update(float delta) {
         // Future: handle animated tiles or dynamic map elements
     }
-    
+
     /**
      * Disposes of map resources
      */

@@ -16,6 +16,12 @@ public class Tile extends MapComponent {
     private boolean transition;
     private String nextMap;
 
+    // Spawn properties
+    private String spawnType;      // "player", "transition_target", "npc", "enemy", etc.
+    private int spawnId;           // 1, 2 (for player 1 and 2)
+    private String fromMap;        // "casa/casa.tmx", etc.
+    private String npcName;        // "Villico", "Mercante", "Soldato", "boss", etc.
+
     public Tile(float x, float y, int width, int height, TextureRegion texture, boolean solid) {
         super(x, y);
         this.width = width;
@@ -24,6 +30,10 @@ public class Tile extends MapComponent {
         this.solid = solid;
         this.transition = false;
         this.nextMap = null;
+        this.spawnType = "";
+        this.spawnId = 0;
+        this.fromMap = "";
+        this.npcName = "";
     }
 
     public Tile(float x, float y, int width, int height, TextureRegion texture, boolean solid, boolean transition, String nextMap) {
@@ -34,6 +44,40 @@ public class Tile extends MapComponent {
         this.solid = solid;
         this.transition = transition;
         this.nextMap = nextMap;
+        this.spawnType = "";
+        this.spawnId = 0;
+        this.fromMap = "";
+        this.npcName = "";
+    }
+
+    public Tile(float x, float y, int width, int height, TextureRegion texture, boolean solid,
+                boolean transition, String nextMap, String spawnType, int spawnId, String fromMap) {
+        super(x, y);
+        this.width = width;
+        this.height = height;
+        this.texture = texture;
+        this.solid = solid;
+        this.transition = transition;
+        this.nextMap = nextMap;
+        this.spawnType = spawnType != null ? spawnType : "";
+        this.spawnId = spawnId;
+        this.fromMap = fromMap != null ? fromMap : "";
+        this.npcName = "";
+    }
+
+    public Tile(float x, float y, int width, int height, TextureRegion texture, boolean solid,
+                boolean transition, String nextMap, String spawnType, int spawnId, String fromMap, String npcName) {
+        super(x, y);
+        this.width = width;
+        this.height = height;
+        this.texture = texture;
+        this.solid = solid;
+        this.transition = transition;
+        this.nextMap = nextMap;
+        this.spawnType = spawnType != null ? spawnType : "";
+        this.spawnId = spawnId;
+        this.fromMap = fromMap != null ? fromMap : "";
+        this.npcName = npcName != null ? npcName : "";
     }
 
     @Override
@@ -82,5 +126,37 @@ public class Tile extends MapComponent {
 
     public void setNextMap(String nextMap) {
         this.nextMap = nextMap;
+    }
+
+    public String getSpawnType() {
+        return spawnType;
+    }
+
+    public void setSpawnType(String spawnType) {
+        this.spawnType = spawnType;
+    }
+
+    public int getSpawnId() {
+        return spawnId;
+    }
+
+    public void setSpawnId(int spawnId) {
+        this.spawnId = spawnId;
+    }
+
+    public String getFromMap() {
+        return fromMap;
+    }
+
+    public void setFromMap(String fromMap) {
+        this.fromMap = fromMap;
+    }
+
+    public String getNpcName() {
+        return npcName;
+    }
+
+    public void setNpcName(String npcName) {
+        this.npcName = npcName != null ? npcName : "";
     }
 }

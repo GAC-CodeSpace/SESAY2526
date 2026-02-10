@@ -57,9 +57,15 @@ public class GameScreen extends BaseMenuScreen {
                 // 🎯 Decidi lo zoom in base al nome della mappa
                 if (mapName != null) {
                     if (mapName.contains("primo_villaggio")) {
-                        zoomLevel = 0.6f; // Zoom per primo_villaggio
+                        zoomLevel = 0.6f; // Zoom
                     } else if (mapName.contains("Dungeon_1")) {
-                        zoomLevel = 0.8f; // Zoom per Dungeon_1
+                        zoomLevel = 0.8f;
+                    }else if (mapName.contains("casa")) {
+                        zoomLevel = 0.4f;
+                    }else if (mapName.contains("prima_caverna")) {
+                        zoomLevel = 0.6f;
+                    }else if (mapName.contains("Sala_Boss")) {
+                        zoomLevel = 0.6f;
                     }
                     System.out.println("[GameScreen] Setting zoom " + zoomLevel + " for map: " + mapName);
                 }
@@ -189,6 +195,9 @@ public class GameScreen extends BaseMenuScreen {
         if (controller != null) {
             controller.update(delta);
 
+            if (gameCamera != null) {
+                gameCamera.update();
+            }
             // 2. Rendering del Mondo (Dietro la UI) - Usa worldBatch separato
             worldBatch.begin();
 
@@ -266,6 +275,12 @@ public class GameScreen extends BaseMenuScreen {
                             zoomLevel = 0.6f;
                         } else if (mapName.contains("Dungeon_1")) {
                             zoomLevel = 0.8f;
+                        }else if (mapName.contains("casa")) {
+                            zoomLevel = 0.4f;
+                        }else if (mapName.contains("prima_caverna")) {
+                            zoomLevel = 0.6f;
+                        }else if (mapName.contains("Sala_Boss")) {
+                            zoomLevel = 0.6f;
                         }
                     }
 
@@ -303,6 +318,12 @@ public class GameScreen extends BaseMenuScreen {
                         zoomLevel = 0.6f;
                     } else if (mapName.contains("Dungeon_1")) {
                         zoomLevel = 0.8f;
+                    }else if (mapName.contains("casa")) {
+                        zoomLevel = 0.4f;
+                    }else if (mapName.contains("prima_caverna")) {
+                        zoomLevel = 0.6f;
+                    }else if (mapName.contains("Sala_Boss")) {
+                        zoomLevel = 0.6f;
                     }
                     System.out.println("[GameScreen] Updating zoom to " + zoomLevel + " for map: " + mapName);
                 }
