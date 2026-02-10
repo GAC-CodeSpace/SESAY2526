@@ -146,6 +146,12 @@
    <property name="calpestabile" type="bool" value="false"/>
   </properties>
  </tile>
+ <tile id="263">
+  <properties>
+   <property name="enemyLevel" type="int" value="1"/>
+   <property name="spawnType" value="enemy"/>
+  </properties>
+ </tile>
  <tile id="320" type="Terreno">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
@@ -166,6 +172,11 @@
    <property name="calpestabile" type="bool" value="true"/>
   </properties>
  </tile>
+ <tile id="324">
+  <properties>
+   <property name="calpestabile" type="bool" value="false"/>
+  </properties>
+ </tile>
  <tile id="325" type="Terreno">
   <properties>
    <property name="calpestabile" type="bool" value="true"/>
@@ -174,6 +185,12 @@
  <tile id="326" type="Terreno">
   <properties>
    <property name="calpestabile" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="327">
+  <properties>
+   <property name="enemyLevel" type="int" value="1"/>
+   <property name="spawnType" value="enemy"/>
   </properties>
  </tile>
  <tile id="384" type="Albero">
@@ -454,6 +471,32 @@
  <tile id="832" type="Terreno">
   <properties>
    <property name="calpesttabile" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="833">
+  <properties>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="nextMap" value="primo_villaggio/primo_villaggio.tmx"/>
+   <property name="transition" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="834">
+  <properties>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="nextMap" value="Dungeon1/Dungeon_1.tmx"/>
+   <property name="transition" type="bool" value="true"/>
+  </properties>
+ </tile>
+ <tile id="835">
+  <properties>
+   <property name="fromMap" value="primo_villaggio/primo_villaggio.tmx"/>
+   <property name="spawnType" value="transition_target"/>
+  </properties>
+ </tile>
+ <tile id="836">
+  <properties>
+   <property name="fromMap" value="Dungeon1/Dungeon_1.tmx"/>
+   <property name="spawnType" value="transition_target"/>
   </properties>
  </tile>
  <tile id="837" type="Decorazione">

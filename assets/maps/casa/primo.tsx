@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="primo" tilewidth="16" tileheight="16" tilecount="1536" columns="48">
  <image source="png/atlas.png" width="768" height="512"/>
- <tile id="0">
-  <properties>
-   <property name="calpestabile" type="bool" value="true"/>
-   <property name="transition" type="bool" value="true"/>
-  </properties>
- </tile>
  <tile id="48" type="Casa">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
@@ -45,7 +39,7 @@
  <tile id="55">
   <properties>
    <property name="calpestabile" type="bool" value="true"/>
-   <property name="nextMap" value="casa/casa.tmx"/>
+   <property name="nextMap" value="primo_villaggio/primo_villaggio.tmx"/>
    <property name="transition" type="bool" value="true"/>
   </properties>
  </tile>
@@ -82,6 +76,13 @@
  <tile id="102" type="Albero">
   <properties>
    <property name="calpestabile" type="bool" value="false"/>
+  </properties>
+ </tile>
+ <tile id="103">
+  <properties>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="nextMap" value="Prima_Caverna/prima_caverna.tmx"/>
+   <property name="transition" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="144" type="Casa">
@@ -172,7 +173,7 @@
  </tile>
  <tile id="241" type="Terreno">
   <properties>
-   <property name="calpestabile" type="bool" value="false"/>
+   <property name="calpestabile" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="242" type="Terreno">
@@ -426,16 +427,11 @@
    <property name="calpestabile" type="bool" value="true"/>
   </properties>
  </tile>
- <tile id="533">
-  <properties>
-   <property name="npcName" value="Villico"/>
-   <property name="spawnType" value="npc"/>
-  </properties>
- </tile>
  <tile id="534">
   <properties>
-   <property name="npcName" value="soldato"/>
-   <property name="spawnType" value="npc"/>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="id" type="int" value="0"/>
+   <property name="spawn" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="576" type="Terreno">
@@ -458,10 +454,11 @@
    <property name="calpestabile" type="bool" value="true"/>
   </properties>
  </tile>
- <tile id="581">
+ <tile id="582">
   <properties>
-   <property name="npcName" value="Mercante"/>
-   <property name="spawnType" value="npc"/>
+   <property name="calpestabile" type="bool" value="true"/>
+   <property name="id" type="int" value="1"/>
+   <property name="spawn" type="bool" value="true"/>
   </properties>
  </tile>
  <tile id="624" type="Terreno">
@@ -526,8 +523,14 @@
  </tile>
  <tile id="678">
   <properties>
-   <property name="fromMap" value="Prima_caverna/prima_caverna.tmx"/>
+   <property name="fromMap" value="Prima_caverna/prima_Caverna.tmx"/>
    <property name="spawnType" value="transition_target"/>
+  </properties>
+ </tile>
+ <tile id="679">
+  <properties>
+   <property name="fromMap" value="primo_villaggio/primo_villaggio.tmx"/>
+   <property name="spawntype" value="transition_target"/>
   </properties>
  </tile>
  <tile id="720" type="Terreno">
@@ -562,15 +565,14 @@
  </tile>
  <tile id="726">
   <properties>
-   <property name="fromMap" value="casa/casa.tmx"/>
-   <property name="spawnType" value="transition_target"/>
+   <property name="spawnId" type="int" value="1"/>
+   <property name="spawnType" value="player"/>
   </properties>
  </tile>
  <tile id="727">
   <properties>
-   <property name="calpestabile" type="bool" value="true"/>
-   <property name="nextMap" value="Prima_caverna/prima_caverna.tmx"/>
-   <property name="transition" type="bool" value="true"/>
+   <property name="spawnId" type="int" value="2"/>
+   <property name="spawnType" value="player"/>
   </properties>
  </tile>
 </tileset>

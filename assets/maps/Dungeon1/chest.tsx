@@ -8,4 +8,10 @@
    <property name="isLocked" type="bool" value="false"/>
   </properties>
  </tile>
+ <tile id="26">
+  <properties>
+   <property name="enemyLevel" type="int" value="1"/>
+   <property name="spawnType" value="enemy"/>
+  </properties>
+ </tile>
 </tileset>
