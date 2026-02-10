@@ -185,5 +185,19 @@ public class InventoryScreen extends BaseMenuScreen implements PlayerStatsObserv
         if (controller.getP1() != null) controller.getP1().removeObserver(this);
         if (controller.getP2() != null) controller.getP2().removeObserver(this);
     }
+
+    public void updateMenuRoot(MenuComponent newRoot, PlayerCharacter pc) {
+        // Identifichiamo quale pannello deve mostrare la scelta delle skill
+        Table targetPanel = (pc == controller.getP1()) ? p1Panel : p2Panel;
+        String title = (pc == controller.getP1()) ? "PLAYER 1" : "PLAYER 2";
+
+        // Puliamo il pannello e mostriamo solo il titolo e il nuovo menu di scelta
+        targetPanel.clear();
+        targetPanel.top();
+        targetPanel.add(new Label(title + " - SELEZIONE POTENZIAMENTO", skin)).padBottom(20).row();
+
+        // Disegniamo il menu di scelta (le skill) nel pannello
+        renderCompositeTree(targetPanel, newRoot);
+    }
 }
 

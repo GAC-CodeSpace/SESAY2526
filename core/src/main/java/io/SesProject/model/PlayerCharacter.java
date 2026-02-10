@@ -1,5 +1,6 @@
 package io.SesProject.model;
 
+import io.SesProject.model.game.Skill;
 import io.SesProject.model.game.item.ItemType;
 import io.SesProject.model.game.item.factory.Item;
 import io.SesProject.model.game.item.factory.ItemFactory;
@@ -22,6 +23,7 @@ public class PlayerCharacter {
     private int baseMaxHp = 100;
     private int karma;
     private int baseDamage = 5;
+
 
     // Posizione (per esplorazione)
     private float x, y;
@@ -68,7 +70,7 @@ public class PlayerCharacter {
     }
 
     // Metodo di notifica (Notify)
-    private void notifyObservers() {
+    public void notifyObservers() {
         for (PlayerStatsObserver observer : observers) {
             observer.onStatsChanged(this); // Passa se stesso come riferimento
         }
@@ -200,7 +202,7 @@ public class PlayerCharacter {
         notifyObservers();
     }
 
-    private void recalculateStats() {
+    public void recalculateStats() {
         int armorBonus = (equippedArmor != null) ? equippedArmor.getValue() : 0;
         this.maxHp = this.baseMaxHp + armorBonus;
 

@@ -10,6 +10,7 @@ public class Skill {
     private String name;
     private int maxCooldown;     // Turni di attesa (0 = sempre usabile)
     private int currentCooldown; // Turni rimanenti
+    private int powerBonus = 0;
 
     private SkillStrategy behavior; // Strategy
 
@@ -36,7 +37,11 @@ public class Skill {
             currentCooldown--;
         }
     }
+    public void applyPowerUp(int amount) {
+        this.powerBonus += amount;
+    }
 
+    public int getPowerBonus() { return powerBonus; }
     public void setSkillStrategy(SkillStrategy behavior){
         this.behavior = behavior;
     }

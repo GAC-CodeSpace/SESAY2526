@@ -14,6 +14,7 @@ import io.SesProject.model.PlayerCharacter;
 import io.SesProject.model.game.GameObject;
 import io.SesProject.model.game.PlayerEntity;
 import io.SesProject.model.game.item.factory.Item;
+import io.SesProject.model.game.item.factory.PowerUpItem;
 import io.SesProject.model.game.item.factory.SkillItemFactory;
 import io.SesProject.model.game.item.factory.WeaponFactory;
 import io.SesProject.model.game.map.Tile;
@@ -461,8 +462,16 @@ public class GameController extends BaseController {
             // Suono reward
             game.getSystemFacade().getAudioManager().playSound("music/sfx/menu/070_Equip_10.wav", game.getSystemFacade().getAssetManager());
         }
-    }
 
+        if (Math.random() < 0.20) {
+            player.addItem(new PowerUpItem());
+            System.out.println("[REWARD] Fortunato! Ricevuta anche una Sfera del Potere per " + player.getName());
+
+            // Notifica a schermo (se hai accesso alla view qui, altrimenti usa i log)
+            if (game.getScreen() instanceof GameScreen) {
+                ((GameScreen) game.getScreen()).showMessage("Dono Raro", "L'NPC ti ha donato anche una Sfera del Potere!");
+            }
+        }}
     // --- Getters ---
     public List<GameObject> getWorldEntities() {
         return worldEntities;
