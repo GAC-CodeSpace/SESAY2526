@@ -15,11 +15,12 @@ public class Skill {
 
     private SkillStrategy behavior; // Strategy
 
-    public Skill(String name, int cooldown, SkillStrategy behavior) {
+    public Skill(String name, int cooldown, boolean unlocked, SkillStrategy behavior) {
         this.name = name;
         this.maxCooldown = cooldown;
         this.currentCooldown = 0;
         this.setSkillStrategy(behavior);
+        this.unlocked = unlocked;
     }
 
     public boolean isReady() {
