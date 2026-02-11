@@ -199,8 +199,6 @@ public class GameMap {
 
     /**
      * Gets the spawn tile for a specific player ID
-     * @param playerId The player ID (1 or 2)
-     * @return The spawn tile for the player, or null if not found
      */
     public Tile getPlayerSpawnById(int playerId) {
         for (Layer layer : layers) {

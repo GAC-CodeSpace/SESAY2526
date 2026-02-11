@@ -5,10 +5,10 @@ import io.SesProject.model.game.movementStrategy.StaticStrategy;
 import io.SesProject.model.memento.NpcMemento;
 
 /*Tale classe definisce i parametri di configurazione degli npc*/
-
 public class NpcData {
     // Identità
-    private String name;
+    private String name; // Technical name for tracking
+    private String displayName; // User-facing name for UI
     private String spriteName;
 
     // Logica
@@ -25,6 +25,7 @@ public class NpcData {
 
     private int xpReward;
     private int karmaReward;
+    private String mapName; // Track which map this NPC belongs to
 
     public NpcData() {
         // Valori di default
@@ -47,6 +48,8 @@ public class NpcData {
         m.isDefeated = this.isDefeated; // Fondamentale!
         m.xpReward = this.xpReward;
         m.karmaReward = this.karmaReward;
+        m.mapName = this.mapName; // Save map association
+        m.displayName = this.displayName; // Save display name
         return m;
     }
 
@@ -64,6 +67,8 @@ public class NpcData {
         this.isDefeated = m.isDefeated;
         this.xpReward = m.xpReward;
         this.karmaReward = m.karmaReward;
+        this.mapName = m.mapName; // Restore map association
+        this.displayName = m.displayName; // Restore display name
     }
 
     // Setters (usati dal Builder)
@@ -98,4 +103,8 @@ public class NpcData {
     public int getKarmaReward() { return karmaReward; }
     public void setXpReward(int xp) { this.xpReward = xp; }
     public void setKarmaReward(int karma) { this.karmaReward = karma; }
+    public String getMapName() { return mapName; }
+    public void setMapName(String mapName) { this.mapName = mapName; }
+    public String getDisplayName() { return displayName != null ? displayName : name; } // Fallback to name if no display name
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 }

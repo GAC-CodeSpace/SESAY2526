@@ -33,7 +33,17 @@ public class VictoryController extends BaseController {
         game.changeAppState(new PlayState());
     }
 
+    /**
+     * Called when user clicks "Return to Main Menu" button after boss victory.
+     * Returns to the main menu.
+     */
+    public void returnToMainMenu() {
+        System.out.println("[VICTORY] Boss defeated! Returning to main menu...");
+        game.changeController(new MainMenuController(game, authService));
+    }
+
     public CombatReward getReward() {
         return reward;
     }
 }
+

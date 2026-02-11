@@ -26,10 +26,10 @@ public class GameScreen extends BaseMenuScreen {
     private GameController controller;
     private SpriteFlyweightFactory spriteFactory;
 
-    // 🎯 AGGIUNTO: Camera dedicata per il rendering del gioco con zoom
+    //Camera dedicata per il rendering del gioco con zoom
     private OrthographicCamera gameCamera;
 
-    // 🎯 AGGIUNTO: Batch separato per il mondo di gioco (mappa + entità)
+    //Batch separato per il mondo di gioco (mappa + entità)
     private SpriteBatch worldBatch;
 
     public GameScreen(GameController controller) {
@@ -90,6 +90,95 @@ public class GameScreen extends BaseMenuScreen {
         Gdx.input.setInputProcessor(stage);
 
         buildUI();
+
+        // Show story introduction for new games
+        if (controller.getGame().getCurrentSession() != null &&
+            controller.getGame().getCurrentSession().isNewGame()) {
+            showStoryIntroduction();
+        }
+    }
+
+    /**
+     * Shows the story introduction dialog for new games
+     */
+    private void showStoryIntroduction() {
+        // Block input in controller
+        controller.startDialogState();
+
+        // Force input processor to stage
+        Gdx.input.setInputProcessor(stage);
+
+        Dialog dialog = new Dialog("", skin, "dialog");
+
+        // Semi-transparent background
+        if (skin.has("white", com.badlogic.gdx.scenes.scene2d.utils.Drawable.class)) {
+            dialog.setBackground(skin.newDrawable("white", 0, 0, 0, 0.9f));
+        }
+
+        // Title
+        Label titleLabel = new Label("L'Inizio della Leggenda", skin);
+        titleLabel.setColor(Color.GOLD);
+        titleLabel.setFontScale(1.5f);
+        dialog.getContentTable().add(titleLabel).padTop(30).padBottom(20).row();
+
+        // Story text
+        String[] storyLines = {
+            "Ascolta, mia Progenie.",
+            "",
+            "Un'ombra terribile è calata su Smede.",
+            "Il cuore del mondo ha smesso di battere e il gelo avanza:",
+            "le Forgie si stanno spegnendo una dopo l'altra.",
+            "",
+            "Non c'è tempo per la paura.",
+            "Il destino del creato è ora nelle tue mani.",
+            "",
+            "Viaggia attraverso i regni, raggiungi le 4 Forgie Elementali",
+            "e recupera l'Arte della Riaccensione prima che l'oscurità",
+            "ci inghiotta per sempre.",
+            "",
+            "Va', ora."
+        };
+
+        for (String line : storyLines) {
+            Label lineLabel = new Label(line, skin);
+            lineLabel.setWrap(true);
+            lineLabel.setAlignment(Align.center);
+
+            if (line.isEmpty()) {
+                dialog.getContentTable().add(lineLabel).width(600).padBottom(5).row();
+            } else if (line.equals("Ascolta, mia Progenie.")) {
+                lineLabel.setColor(Color.CYAN);
+                lineLabel.setFontScale(1.1f);
+                dialog.getContentTable().add(lineLabel).width(600).padBottom(15).row();
+            } else if (line.equals("Va', ora.")) {
+                lineLabel.setColor(Color.ORANGE);
+                lineLabel.setFontScale(1.1f);
+                dialog.getContentTable().add(lineLabel).width(600).padTop(10).row();
+            } else {
+                lineLabel.setColor(Color.WHITE);
+                dialog.getContentTable().add(lineLabel).width(600).padBottom(3).row();
+            }
+        }
+
+        // Continue button
+        TextButton continueBtn = new TextButton("INIZIA AVVENTURA", skin);
+        continueBtn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                // Clear the new game flag so story doesn't show again
+                controller.getGame().getCurrentSession().setIsNewGame(false);
+                // End dialog state to restore input
+                controller.endDialogState();
+                // Remove the dialog
+                dialog.remove();
+            }
+        });
+        dialog.getButtonTable().add(continueBtn).width(250).height(50).padTop(20).padBottom(20);
+
+        // Show dialog
+        dialog.show(stage);
+        stage.setKeyboardFocus(dialog);
+        stage.setScrollFocus(dialog);
     }
 
     // --- FIX FONDAMENTALE PER L'INPUT ---
@@ -124,7 +213,7 @@ public class GameScreen extends BaseMenuScreen {
         }
 
         // Titolo (Nome NPC)
-        Label nameLabel = new Label(npcData.getName(), skin);
+        Label nameLabel = new Label(npcData.getDisplayName(), skin);
         nameLabel.setColor(Color.GOLD);
         nameLabel.setFontScale(1.2f);
 
@@ -301,7 +390,7 @@ public class GameScreen extends BaseMenuScreen {
         }
     }
     /**
-     * 🎯 AGGIUNTO: Aggiorna lo zoom della camera quando viene caricata una nuova mappa
+     * Aggiorna lo zoom della camera quando viene caricata una nuova mappa
      */
     public void updateCameraForCurrentMap() {
         if (gameCamera == null) return;
