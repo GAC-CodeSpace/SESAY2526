@@ -28,8 +28,8 @@ public class PlayerCombatant extends Combatant {
             // 3. Presa d'acciaio: Aumenta HP max di entrambi
             this.skills.add(new Skill("Presa d'Acciaio", 4, sourceData.getKarma()>=35,(u, t, ctx) -> {
                 ctx.stream().filter(c -> c instanceof PlayerCombatant).forEach(c -> {
-                    c.setMaxHp(c.getMaxHp() + 12); // Aumenta il limite massimo
-                    c.heal(12); // Cura i nuovi HP aggiunti
+                    c.setMaxHp(c.getMaxHp() + 10); // Aumenta il limite massimo
+                    c.heal(10); // Cura i nuovi HP aggiunti
                 });
             }));
 

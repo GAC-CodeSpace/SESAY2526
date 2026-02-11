@@ -437,6 +437,22 @@ public class GameScreen extends BaseMenuScreen {
         return this.controller;
     }
 
+    public void showMessage(String titolo, String testo) {
+        Dialog dialog = new Dialog(titolo, skin);
+        dialog.text(testo);
+        dialog.button("Continua");
+        dialog.show(stage);
+
+        // Blocca il movimento mentre il messaggio è attivo
+        controller.startDialogState();
+        dialog.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                controller.endDialogState();
+            }
+        });
+    }
+
     @Override
     public void dispose() {
         super.dispose();

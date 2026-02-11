@@ -35,6 +35,7 @@ public class GameController extends BaseController {
     private List<GameObject> worldEntities;
     private List<InputStrategy> inputStrategies;
     private List<PlayerEntity> activePlayers;
+    private final int[] KARMA_THRESHOLDS = {20, 35, 55, 80};
 
     // Map controller for managing the game map
     private MapController mapController;
@@ -86,12 +87,14 @@ public class GameController extends BaseController {
         // --- 1. SETUP PLAYERS ---
         // Nota: Mantengo il costruttore (session, game) del tuo GameController originale
         PlayerEntity p1 = new PlayerEntity(session.getP1(), game);
+        setupKarmaListener(p1);
         worldEntities.add(p1);
         activePlayers.add(p1);
         inputStrategies.add(new KeyboardInputStrategy(p1,
             Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D));
 
         PlayerEntity p2 = new PlayerEntity(session.getP2(), game);
+        setupKarmaListener(p2);
         worldEntities.add(p2);
         activePlayers.add(p2);
         inputStrategies.add(new KeyboardInputStrategy(p2,
@@ -639,6 +642,56 @@ public class GameController extends BaseController {
         }
     }
 
+
+
+    private void setupKarmaListener(PlayerEntity entity) {
+        PlayerCharacter pc = entity.getData();
+        pc.addObserver(player -> {
+            int currentKarma = player.getKarma();
+            int nextIndex = entity.getLastThresholdIndex();
+
+            if (nextIndex < KARMA_THRESHOLDS.length && currentKarma >= KARMA_THRESHOLDS[nextIndex]) {
+                int valoreRaggiunto = KARMA_THRESHOLDS[nextIndex];
+                entity.setLastThresholdIndex(nextIndex + 1);
+                mostraMessaggioPersonalizzato(entity, valoreRaggiunto);
+            }
+        });
+    }
+
+    private void mostraMessaggioPersonalizzato(PlayerEntity entity, int valore) {
+        if (game.getScreen() instanceof GameScreen) {
+            String archetipo = entity.getArchetype();
+            String messaggio = "Il " + archetipo + " ha raggiunto " + valore + " punti Karma!\n";
+
+            if (valore == 20) {
+                if (archetipo.equalsIgnoreCase("Warrior")) {
+                    messaggio += "Nuova abilita' sbloccata:\n PROVOCAZIONE (costringe il nemico ad attaccare il Warrior per i prossimi 2 turni) (CD:3)";
+                } else {
+                    messaggio += "Nuova abilita' sbloccata:\n CONGELAMENTO (infligge danni moderati e congela il nemico, facendogli saltare il prossimo turno) (CD:3)";
+                }
+            } else if (valore == 35) {
+                if (archetipo.equalsIgnoreCase("Warrior")) {
+                    messaggio += "Nuova abilita' sbloccata:\n PRESA D'ACCIAIO (aumenta gli HP massimi di entrambi i giocatori di 10) (CD:4)";
+                } else {
+                    messaggio += "Nuova abilita' sbloccata:\n TRIBUTO DI SANGUE (infligge danni elevati e cura l'altro giocatore di 15 HP) (CD:4)";
+                }
+            } else if (valore == 55) {
+                if (archetipo.equalsIgnoreCase("Warrior")) {
+                    messaggio += "Nuova abilita' sbloccata:\n ROTTURA GUARDIA (il prossimo attacco subito dal nemico, infliggera' il 50% di danni in piu') (CD:3)";
+                } else {
+                    messaggio += "Nuova abilita' sbloccata:\n SCUDO MAGICO (ottieni uno scudo: il prossimo colpo subito, infligge meno danni e ne riflette una parte al nemico) (CD:4)";
+                }
+            } else if (valore == 80) {
+                if (archetipo.equalsIgnoreCase("Warrior")) {
+                    messaggio += "Nuova abilita' sbloccata:\n ULTIMO BALUARDO (infligge danni molto elevati, ma perdi il 20% degli HP attuali) (CD:5)\nComplimenti! Hai sbloccato tutte le abilita' del Warrior!";
+                } else {
+                    messaggio += "Nuova abilita' sbloccata:\n SUPERNOVA (infligge danni elevatissimi, ma infligge anche danni moderati a te stesso e all'altro giocatore) (CD:6)\nComplimenti! Hai sbloccato tutte le abilita' del Mage!";
+                }
+            }
+
+            ((GameScreen) game.getScreen()).showMessage("Traguardo Karma", messaggio);
+        }
+    }
     // --- Metodi per la gestione del Dialogo (Chiamati dalla View) ---
 
     public void startDialogState() {
