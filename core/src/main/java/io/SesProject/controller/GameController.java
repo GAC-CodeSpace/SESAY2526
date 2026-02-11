@@ -76,8 +76,12 @@ public class GameController extends BaseController {
             return;
         }
 
-        // INTEGRATO: Caricamento esplicito del livello
-        mapController.loadLevel("casa/casa.tmx");
+        // Load the current map from session (preserves map state across pause/resume)
+        String mapToLoad = session.getCurrentMapName();
+        mapController.loadLevel(mapToLoad);
+        System.out.println("[GAME] Loading map from session: " + mapToLoad);
+
+
 
         // --- 1. SETUP PLAYERS ---
         // Nota: Mantengo il costruttore (session, game) del tuo GameController originale
@@ -86,20 +90,48 @@ public class GameController extends BaseController {
         activePlayers.add(p1);
         inputStrategies.add(new KeyboardInputStrategy(p1,
             Input.Keys.W, Input.Keys.S, Input.Keys.A, Input.Keys.D));
-        p1.setPosition(500, 300);
+
         PlayerEntity p2 = new PlayerEntity(session.getP2(), game);
         worldEntities.add(p2);
         activePlayers.add(p2);
         inputStrategies.add(new KeyboardInputStrategy(p2,
             Input.Keys.UP, Input.Keys.DOWN, Input.Keys.LEFT, Input.Keys.RIGHT));
-        p2.setPosition(550, 320);
 
-         positionPlayersAtSpawn(p1,p2);
+        // Only position at spawn if this is a NEW GAME
+        // For LOADED GAMES, positions are already restored from memento in PlayerCharacter
+        // We detect new games by checking if NPC list is empty (new game hasn't spawned NPCs yet)
+        boolean isLoadedGame = !session.getWorldNpcs().isEmpty();
+
+        if (!isLoadedGame) {
+            // New game - position players at spawn points
+            System.out.println("[GAME] New game detected - positioning players at spawn points");
+            positionPlayersAtSpawn(p1, p2);
+        } else {
+            // Loaded game - preserve saved positions
+            System.out.println(String.format("[GAME] Loaded game - preserving saved positions: P1(%.1f, %.1f), P2(%.1f, %.1f)",
+                p1.getX(), p1.getY(), p2.getX(), p2.getY()));
+        }
         // --- 2. SETUP NPC ---
         if (!session.getWorldNpcs().isEmpty()) {
             System.out.println("[GAME] Caricamento NPC da salvataggio...");
+
+            // Normalize NPC names to ensure consistency with new naming scheme
+            normalizeNpcNames(session.getWorldNpcs());
+
+            // Get current map name
+            String currentMap = session.getCurrentMapName();
+            System.out.println("[GAME] Filtering NPCs for current map: " + currentMap);
+
             for (NpcData data : session.getWorldNpcs()) {
+                // Skip defeated NPCs
                 if (data.isDefeated()) continue;
+
+                // CRITICAL: Only load NPCs that belong to the current map
+                if (data.getMapName() != null && !data.getMapName().equals(currentMap)) {
+                    System.out.println("[GAME] Skipping NPC '" + data.getName() + "' from different map: " + data.getMapName());
+                    continue;
+                }
+
                 if (data.isHostile()) {
                     worldEntities.add(new HostileNpc(data));
                 } else {
@@ -110,6 +142,65 @@ public class GameController extends BaseController {
             System.out.println("[GAME] Generazione NPC dalla mappa...");
             spawnNpcsFromMap();
         }
+    }
+
+    /**
+     * Normalizes NPC names to ensure consistency with the new naming scheme.
+     * This fixes NPCs that were saved with old template names.
+     */
+    private void normalizeNpcNames(List<NpcData> npcs) {
+        System.out.println("[DEBUG] ========== NORMALIZING NPC NAMES ==========");
+        System.out.println("[DEBUG] Total NPCs to normalize: " + npcs.size());
+
+        for (NpcData npc : npcs) {
+            String originalName = npc.getName();
+            System.out.println("[DEBUG] NPC: '" + originalName + "' at (" + npc.getX() + ", " + npc.getY() + ") HP:" + npc.getMaxHp() + " defeated:" + npc.isDefeated());
+
+            // Skip if name is already in correct format
+            if (npc.getName() != null && (
+                npc.getName().startsWith("Boss_L") ||
+                    npc.getName().startsWith("Enemy_L") ||
+                    npc.getName().equals("villico") ||
+                    npc.getName().equals("mercante") ||
+                    npc.getName().equals("soldato"))) {
+                System.out.println("[DEBUG]   ✅ Name already in correct format, skipping");
+                continue;
+            }
+
+            // This is an old NPC with template name - generate proper name
+            float x = npc.getX();
+            float y = npc.getY();
+
+            if (npc.isHostile()) {
+                // Check if it's a boss (high HP threshold)
+                if (npc.getMaxHp() >= 150) {
+                    // It's a boss - assign Boss_L1 or Boss_L2 based on HP
+                    int level = npc.getMaxHp() >= 300 ? 2 : 1;
+                    npc.setName("Boss_L" + level);
+                    System.out.println("[GAME] Normalized boss name: '" + originalName + "' → 'Boss_L" + level + "'");
+                } else {
+                    // It's a regular enemy
+                    int level = npc.getMaxHp() >= 60 ? 2 : 1;
+                    npc.setName("Enemy_L" + level + "_" + (int)x + "_" + (int)y);
+                    System.out.println("[GAME] Normalized enemy name: '" + originalName + "' → 'Enemy_L" + level + "_" + (int)x + "_" + (int)y + "'");
+                }
+            }
+        }
+    }
+
+    private NpcData findExistingNpc(String name, float x, float y) {
+        GameSession session = game.getCurrentSession();
+        if (session == null) return null;
+
+        for (NpcData npc : session.getWorldNpcs()) {
+            // Match by name and approximate position (within 5 pixels tolerance)
+            if (npc.getName().equals(name) &&
+                Math.abs(npc.getX() - x) < 5 &&
+                Math.abs(npc.getY() - y) < 5) {
+                return npc;
+            }
+        }
+        return null;
     }
 
     private void spawnNpcsFromMap() {
@@ -139,6 +230,21 @@ public class GameController extends BaseController {
             float x = spawn.getPosition().x;
             float y = spawn.getPosition().y;
 
+            // Check if this NPC already exists in the session
+            NpcData existingNpc = findExistingNpc(npcName, x, y);
+            if (existingNpc != null) {
+                // NPC already exists - use existing data instead of creating new
+                if (!existingNpc.isDefeated()) {
+                    NpcEntity npc = existingNpc.isHostile() ?
+                        new HostileNpc(existingNpc) : new FriendlyNpc(existingNpc);
+                    worldEntities.add(npc);
+                    System.out.println("[GAME] Restored existing NPC: " + npcName + " at (" + x + ", " + y + ")");
+                } else {
+                    System.out.println("[GAME] Skipping defeated NPC: " + npcName);
+                }
+                continue; // Skip spawning new NPC
+            }
+
             NpcEntity npc = null;
 
             switch (npcName.toLowerCase()) {
@@ -157,6 +263,7 @@ public class GameController extends BaseController {
             }
 
             if (npc != null) {
+                npc.getData().setMapName(session.getCurrentMapName()); // Set map association
                 worldEntities.add(npc);
                 session.addNpc(npc.getData());
                 System.out.println("[GAME] Spawned NPC: " + npcName + " at (" + x + ", " + y + ")");
@@ -173,6 +280,31 @@ public class GameController extends BaseController {
             float y = spawn.getPosition().y;
             String enemyType = spawn.getNpcName(); // "boss" or empty for regular enemies
 
+            // Generate unique name for this enemy
+            String enemyName = "boss".equalsIgnoreCase(enemyType) ?
+                "Boss_L" + level : "Enemy_L" + level + "_" + (int)x + "_" + (int)y;
+
+            System.out.println("[DEBUG] ========== SPAWNING ENEMY ==========");
+            System.out.println("[DEBUG] Enemy type: '" + enemyType + "', Level: " + level);
+            System.out.println("[DEBUG] Generated name: '" + enemyName + "'");
+            System.out.println("[DEBUG] Position: (" + x + ", " + y + ")");
+
+            // Check if this enemy already exists in the session
+            NpcData existingNpc = findExistingNpc(enemyName, x, y);
+            if (existingNpc != null) {
+                // Enemy already exists
+                System.out.println("[DEBUG] Enemy exists! Defeated: " + existingNpc.isDefeated());
+                if (!existingNpc.isDefeated()) {
+                    // Only spawn if not defeated
+                    worldEntities.add(new HostileNpc(existingNpc));
+                    System.out.println("[GAME] Restored existing enemy: " + enemyName + " at (" + x + ", " + y + ")");
+                } else {
+                    System.out.println("[GAME] Skipping defeated enemy: " + enemyName);
+                }
+                continue; // Skip spawning new enemy
+            }
+
+            System.out.println("[DEBUG] Enemy doesn't exist, creating new one");
             NpcFactory enemyFactory;
 
             if ("boss".equalsIgnoreCase(enemyType)) {
@@ -182,25 +314,39 @@ public class GameController extends BaseController {
             }
 
             NpcEntity enemy = enemyFactory.createNpc(x, y);
+            System.out.println("[DEBUG] Factory created enemy with name: '" + enemy.getData().getName() + "'");
+            enemy.getData().setName(enemyName); // Set unique name for tracking
+            enemy.getData().setMapName(session.getCurrentMapName()); // Set map association
+
+            // Set user-facing display name
+            if ("boss".equalsIgnoreCase(enemyType)) {
+                enemy.getData().setDisplayName("Scheletro Gigante");
+            } else {
+                enemy.getData().setDisplayName("Scheletrino");
+            }
+
+            System.out.println("[DEBUG] After setName, enemy name is: '" + enemy.getData().getName() + "', displayName: '" + enemy.getData().getDisplayName() + "'");
             worldEntities.add(enemy);
             session.addNpc(enemy.getData());
-            System.out.println("[GAME] Spawned enemy level " + level + " at (" + x + ", " + y + ")");
+            System.out.println("[GAME] Spawned enemy: " + enemyName + " (" + enemy.getData().getDisplayName() + ") at (" + x + ", " + y + ")");
+            System.out.println("[DEBUG] =======================================");
         }
     }
 
     public void onMapChanged() {
         System.out.println("[GAME] Map changed - Reloading NPCs...");
+        reloadNpcsForCurrentMap();
+    }
 
+    private void reloadNpcsForCurrentMap() {
         GameSession session = game.getCurrentSession();
 
         // Remove all current NPCs from world entities
         worldEntities.removeIf(obj -> obj instanceof NpcEntity);
 
-        // CRITICAL FIX: Clear NPCs from the session to prevent them from being reloaded on wrong maps
-        if (session != null) {
-            session.getWorldNpcs().clear();
-            System.out.println("[GAME] Cleared NPC data from session");
-        }
+        // DON'T clear session NPCs - we need to preserve defeated state!
+        // The spawnNpcsFromMap() method now checks existing NPCs before spawning
+        System.out.println("[GAME] Preserving NPC data in session (defeated state maintained)");
 
         // Respawn NPCs from the new map only (based on spawn tiles)
         spawnNpcsFromMap();
@@ -379,7 +525,7 @@ public class GameController extends BaseController {
     }
 
     /**
-     * 🎯 AGGIUNTO: Checks collisions between an NPC and map tiles
+     * Checks collisions between an NPC and map tiles
      */
     private void checkNpcMapCollisions(NpcEntity npc) {
         if (mapController == null || mapController.getSolidTiles() == null) {
@@ -441,6 +587,13 @@ public class GameController extends BaseController {
                     ));
                     // Carica la nuova mappa
                     mapController.loadLevel(nextMap);
+
+                    // Update session with new map name
+                    GameSession session = game.getCurrentSession();
+                    if (session != null) {
+                        session.setCurrentMapName(nextMap);
+                        System.out.println("[SESSION] Updated current map to: " + nextMap);
+                    }
 
                     // Reload NPCs for the new map
                     onMapChanged();
@@ -547,7 +700,7 @@ public class GameController extends BaseController {
             game.getSystemFacade().getAudioManager().playSound("music/sfx/menu/070_Equip_10.wav", game.getSystemFacade().getAssetManager());
         }
 
-        if (Math.random() < 0.20) {
+        if (Math.random() < 0.30) {
             player.addItem(new PowerUpItem());
             System.out.println("[REWARD] Fortunato! Ricevuta anche una Sfera del Potere per " + player.getName());
 

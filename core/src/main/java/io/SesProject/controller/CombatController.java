@@ -259,6 +259,12 @@ public class CombatController extends BaseController {
             // Create reward object
             combatReward = new CombatReward(xpGained, karmaGained);
 
+            // Check if defeated enemy is a boss
+            if (specificEnemyData.getName() != null && specificEnemyData.getName().startsWith("Boss_L")) {
+                System.out.println("[COMBAT] Boss defeated! Setting boss victory flag.");
+                combatReward.setBossVictory(true);
+            }
+
             // Distribute rewards to both players
             GameSession session = game.getCurrentSession();
             PlayerCharacter p1 = session.getP1();
@@ -286,19 +292,6 @@ public class CombatController extends BaseController {
         }
         return false;
     }
-
-//    private boolean checkLoseCondition() {
-//        boolean allDead = true;
-//        for (Combatant h : heroes) {
-//            if (h.getCurrentHp() > 0) allDead = false;
-//        }
-//        if (allDead) {
-//            System.out.println("[COMBAT] GAME OVER...");
-//            game.changeAppState(new PlayState());
-//            return true;
-//        }
-//        return false;
-//    }
 
     private boolean checkLoseCondition() {
         // Controlla se tutti gli eroi sono morti
@@ -331,3 +324,4 @@ public class CombatController extends BaseController {
         return combatReward;
     }
 }
+

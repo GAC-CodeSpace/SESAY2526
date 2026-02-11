@@ -142,7 +142,7 @@ public class CombatScreen extends BaseMenuScreen {
      * Ricostruisce i pannelli usando il Pattern Composite.
      */
     public void updateActionMenu() {
-        turnLabel.setText("Turno di: " + controller.getCurrentActor().getName());
+        turnLabel.setText("Turno di: " + controller.getCurrentActor().getDisplayName());
         actionsContainer.clear(); // Pulisce i bottoni del turno precedente
 
         if (controller.isPlayerTurn()) {
@@ -214,4 +214,3 @@ public class CombatScreen extends BaseMenuScreen {
         }
     }
 }
-

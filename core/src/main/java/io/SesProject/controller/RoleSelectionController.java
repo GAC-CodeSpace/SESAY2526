@@ -52,15 +52,21 @@ public class RoleSelectionController extends BaseController {
         // Passiamo isP1Tank al costruttore della sessione
         GameSession initialSession = new GameSession(this.isP1Tank);
 
+        // Mark as new game to trigger story intro when loaded
+        initialSession.setIsNewGame(true);
+
         // Il Memento salverà i PlayerCharacter già configurati con la classe corretta
         Memento snapshot = initialSession.save();
 
         int newSlotId = facade.getSaveService().createNewSaveSlot(snapshot, currentProfile);
 
         if (newSlotId != -1) {
+            // Return to main menu - player will load the save manually
             game.changeController(new MainMenuController(game, authService));
         }
     }
+
+
 
     public boolean isP1Tank() { return isP1Tank; }
 }

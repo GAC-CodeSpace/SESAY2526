@@ -144,6 +144,10 @@ public abstract class Combatant {
         return maxHp;
     }
 
+    public String getDisplayName() {
+        return name;
+    }
+
     public List<Skill> getSkills() {
         return skills;
     }
