@@ -134,13 +134,14 @@ public class CombatController extends BaseController {
         MenuComposite actions = new MenuComposite("AZIONI");
 
         for (Skill s : currentActor.getSkills()) {
-            String label = s.getName();
-            if (!s.isReady()) {
-                label += " (" + s.getCurrentCooldown() + ")";
+            if (s.isUnlocked()) {
+                String label = s.getName();
+                if (!s.isReady()) {
+                    label += " (" + s.getCurrentCooldown() + ")";
+                }
+                actions.add(new MenuItem(label, new UseSkillCommand(this, s)));
             }
-            actions.add(new MenuItem(label, new UseSkillCommand(this, s)));
         }
-
         root.add(actions);
         return root;
     }
