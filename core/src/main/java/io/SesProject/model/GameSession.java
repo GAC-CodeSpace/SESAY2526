@@ -33,7 +33,12 @@ public class GameSession {
     // NUOVO: La lista persistente degli NPC nel mondo
     private List<NpcData> worldNpcs;
 
+    // Current map name to preserve map state
+    private String currentMapName = "casa/casa.tmx"; // Default starting map
+
     private int saveSlotId = -1; // -1 = nuovo/non salvato, >0 = slot esistente
+
+    private boolean isNewGame = false; // Flag to trigger story introduction
 
     public GameSession(boolean isP1Tank) {
         this.worldNpcs = new ArrayList<>();
@@ -60,16 +65,40 @@ public class GameSession {
     }
 
     public void updateNpcsFromWorld(List<GameObject> worldEntities) {
-        // Svuotiamo la lista vecchia
-        worldNpcs.clear();
+        // DON'T clear the list - we need to preserve defeated NPCs!
+        // Instead, update existing NPCs and add new ones
 
-        // Per ogni entità attiva nel mondo
+        // First, collect all NPCs currently in the world
+        List<NpcData> npcsInWorld = new ArrayList<>();
         for (GameObject obj : worldEntities) {
-            // Se è un NPC, aggiungiamo i suoi DATI alla lista
             if (obj instanceof NpcEntity) {
-                worldNpcs.add(((NpcEntity) obj).getData());
+                npcsInWorld.add(((NpcEntity) obj).getData());
             }
         }
+
+        // Update existing NPCs or add new ones
+        for (NpcData worldNpc : npcsInWorld) {
+            // Check if this NPC already exists in our list
+            boolean found = false;
+            for (int i = 0; i < worldNpcs.size(); i++) {
+                NpcData existingNpc = worldNpcs.get(i);
+                // Match by name and approximate position
+                if (existingNpc.getName().equals(worldNpc.getName()) &&
+                    Math.abs(existingNpc.getX() - worldNpc.getX()) < 5 &&
+                    Math.abs(existingNpc.getY() - worldNpc.getY()) < 5) {
+                    // Update the existing NPC data (position may have changed)
+                    worldNpcs.set(i, worldNpc);
+                    found = true;
+                    break;
+                }
+            }
+
+            // If not found, add as new NPC
+            if (!found) {
+                worldNpcs.add(worldNpc);
+            }
+        }
+
         System.out.println("[SESSION] Dati NPC aggiornati per il salvataggio. Totale: " + worldNpcs.size());
     }
     // --- SAVE ---
@@ -78,6 +107,8 @@ public class GameSession {
         m.creationDate = this.creationDate;
         m.player1 = p1.save();
         m.player2 = p2.save();
+        m.currentMapName = this.currentMapName; // Save current map
+        m.isNewGame = this.isNewGame; // Save new game flag
 
         // Salviamo lo stato di tutti gli NPC
         for (NpcData npc : worldNpcs) {
@@ -93,6 +124,8 @@ public class GameSession {
         GameSessionMemento state = (GameSessionMemento) m;
 
         this.creationDate = state.creationDate;
+        this.currentMapName = state.currentMapName != null ? state.currentMapName : "casa/casa.tmx"; // Restore map or use default
+        this.isNewGame = state.isNewGame; // Restore new game flag
 
         // Restore Players
         if (this.p1 == null) this.p1 = new PlayerCharacter();
@@ -120,9 +153,11 @@ public class GameSession {
     // Metodo helper per ripristinare il comportamento (limitazione della serializzazione)
     private void reassignStrategyBehavior(NpcData data) {
         if (data.isHostile()) {
-            data.setMovementStrategy(new InputMovementStrategy());
-        } else {
+            // Hostile NPCs (enemies) should move autonomously
             data.setMovementStrategy(new RandomMovementStrategy());
+        } else {
+            // Friendly NPCs (villagers, merchants) should stay in place
+            data.setMovementStrategy(new StaticStrategy());
         }
     }
 
@@ -139,4 +174,11 @@ public class GameSession {
 
     public void setSaveSlotId(int id) { this.saveSlotId = id; }
     public int getSaveSlotId() { return saveSlotId; }
+
+    public String getCurrentMapName() { return currentMapName; }
+    public void setCurrentMapName(String mapName) { this.currentMapName = mapName; }
+
+    public boolean isNewGame() { return isNewGame; }
+    public void setIsNewGame(boolean isNewGame) { this.isNewGame = isNewGame; }
 }
+

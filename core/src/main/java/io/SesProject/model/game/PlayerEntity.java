@@ -9,6 +9,8 @@ public class PlayerEntity extends GameObject {
 
     private PlayerCharacter data; // DTO Persistente
     private RpgGame game; // Reference to game for audio access
+    private int lastKarmaThreshold = 10;
+    private int lastThresholdIndex = 0;
 
     // Footstep sound timing
     private float footstepTimer = 0f;
@@ -52,6 +54,8 @@ public class PlayerEntity extends GameObject {
         }
     }
 
+
+
     /**
      * Plays the footstep sound effect
      */
@@ -72,6 +76,17 @@ public class PlayerEntity extends GameObject {
     public String getName() {
         return data.getName();
     }
+
+    public int getLastKarmaThreshold() {
+        return lastKarmaThreshold;
+    }
+
+    public void setLastKarmaThreshold(int threshold) {
+        this.lastKarmaThreshold = threshold;
+    }
+
+    public int getLastThresholdIndex() { return lastThresholdIndex; }
+    public void setLastThresholdIndex(int index) { this.lastThresholdIndex = index; }
 
     public String getArchetype() {
         return this.data.getArchetype();

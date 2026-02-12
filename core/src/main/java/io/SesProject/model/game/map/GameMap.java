@@ -149,6 +149,121 @@ public class GameMap {
         }
     }
 
+    /**
+     * Gets all spawn tiles (tiles with spawnType property set)
+     */
+    public List<Tile> getSpawnTiles() {
+        List<Tile> spawnTiles = new ArrayList<>();
+        for (Layer layer : layers) {
+            collectSpawnTiles(layer, spawnTiles);
+        }
+        return spawnTiles;
+    }
+
+    private void collectSpawnTiles(MapComponent component, List<Tile> result) {
+        if (component instanceof Tile) {
+            Tile tile = (Tile) component;
+            if (tile.getSpawnType() != null && !tile.getSpawnType().isEmpty()) {
+                result.add(tile);
+            }
+        }
+
+        for (MapComponent child : component.getChildren()) {
+            collectSpawnTiles(child, result);
+        }
+    }
+
+    /**
+     * Gets spawn tiles filtered by spawnType (e.g., "npc", "enemy")
+     */
+    public List<Tile> getSpawnTilesByType(String spawnType) {
+        List<Tile> result = new ArrayList<>();
+        for (Layer layer : layers) {
+            collectSpawnTilesByType(layer, spawnType, result);
+        }
+        return result;
+    }
+
+    private void collectSpawnTilesByType(MapComponent component, String spawnType, List<Tile> result) {
+        if (component instanceof Tile) {
+            Tile tile = (Tile) component;
+            if (spawnType.equals(tile.getSpawnType())) {
+                result.add(tile);
+            }
+        } else if (component instanceof Layer) {
+            for (MapComponent child : component.getChildren()) {
+                collectSpawnTilesByType(child, spawnType, result);
+            }
+        }
+    }
+
+    /**
+     * Gets the spawn tile for a specific player ID
+     */
+    public Tile getPlayerSpawnById(int playerId) {
+        for (Layer layer : layers) {
+            Tile spawn = findPlayerSpawn(layer, playerId);
+            if (spawn != null) {
+                return spawn;
+            }
+        }
+        return null;
+    }
+
+    private Tile findPlayerSpawn(MapComponent component, int playerId) {
+        if (component instanceof Tile) {
+            Tile tile = (Tile) component;
+            if ("player".equalsIgnoreCase(tile.getSpawnType()) && tile.getSpawnId() == playerId) {
+                return tile;
+            }
+        }
+
+        for (MapComponent child : component.getChildren()) {
+            Tile found = findPlayerSpawn(child, playerId);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the spawn tile for transitioning from a specific map
+     * @param previousMap The previous map name (e.g., "casa/casa.tmx")
+     * @return The spawn tile for the transition, or null if not found
+     */
+    public Tile getSpawnFromMap(String previousMap) {
+        if (previousMap == null || previousMap.isEmpty()) {
+            return null;
+        }
+
+        for (Layer layer : layers) {
+            Tile spawn = findTransitionSpawn(layer, previousMap);
+            if (spawn != null) {
+                return spawn;
+            }
+        }
+        return null;
+    }
+
+    private Tile findTransitionSpawn(MapComponent component, String previousMap) {
+        if (component instanceof Tile) {
+            Tile tile = (Tile) component;
+            if ("transition_target".equalsIgnoreCase(tile.getSpawnType()) &&
+                previousMap.equals(tile.getFromMap())) {
+                return tile;
+            }
+        }
+
+        for (MapComponent child : component.getChildren()) {
+            Tile found = findTransitionSpawn(child, previousMap);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
     public String getMapName() {
         return mapName;
     }

@@ -18,6 +18,9 @@ public class NpcMemento {
     public boolean isDefeated;
     public int xpReward;
     public int karmaReward;
+    public String mapName; // Track which map this NPC belongs to
+    public String displayName; // User-facing name for UI
 
     public NpcMemento() {}
 }
+

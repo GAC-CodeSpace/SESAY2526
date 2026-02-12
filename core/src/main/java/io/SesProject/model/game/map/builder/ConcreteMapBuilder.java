@@ -135,7 +135,7 @@ public class ConcreteMapBuilder implements MapBuilder {
                     // Check for transition properties
                     boolean isTransition = false;
                     String nextMap = null;
-                    
+
                     if (props.containsKey("transition")) {
                         Object transitionValue = props.get("transition");
                         if (transitionValue instanceof Boolean) {
@@ -144,19 +144,38 @@ public class ConcreteMapBuilder implements MapBuilder {
                             isTransition = ((Integer) transitionValue) == 1;
                         }
                     }
-                    
+
                     if (props.containsKey("nextMap")) {
                         nextMap = props.get("nextMap", String.class);
                     }
-                    
+
                     if (isTransition && nextMap != null) {
                         transitionTileCount++;
+                    }
+
+                    // Check for spawn properties
+                    String spawnType = props.get("spawnType", "", String.class);
+                    if (spawnType.isEmpty()) {
+                        spawnType = props.get("spawntype", "", String.class); // lowercase variant
+                    }
+                    int spawnId = props.get("spawnId", 0, Integer.class);
+                    if (spawnId == 0) {
+                        spawnId = props.get("spawnid", 0, Integer.class); // lowercase variant
+                    }
+                    String fromMap = props.get("fromMap", "", String.class);
+                    if (fromMap.isEmpty()) {
+                        fromMap = props.get("frommap", "", String.class); // lowercase variant
+                    }
+                    String npcName = props.get("npcName", "", String.class);
+                    if (npcName.isEmpty()) {
+                        npcName = props.get("npcname", "", String.class); // lowercase variant
                     }
 
                     // Create Tile with world coordinates
                     float worldX = x * tileWidth;
                     float worldY = y * tileHeight;
-                    Tile tile = new Tile(worldX, worldY, tileWidth, tileHeight, textureRegion, isSolid, isTransition, nextMap);
+                    Tile tile = new Tile(worldX, worldY, tileWidth, tileHeight, textureRegion, isSolid,
+                        isTransition, nextMap, spawnType, spawnId, fromMap, npcName);
                     layer.addChild(tile);
                 }
             }

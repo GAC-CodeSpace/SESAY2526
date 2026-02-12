@@ -18,7 +18,7 @@ public class CombatantView extends Table implements CombatantObserver {
         super(skin);
         this.subject = subject;
 
-        this.nameLabel = new Label(subject.getName(), skin);
+        this.nameLabel = new Label(subject.getDisplayName(), skin);
         this.hpLabel = new Label(formatHpString(), skin);
 
         this.add(nameLabel).padBottom(5).row();
