@@ -1,4 +1,4 @@
-package io.SesProject.map;
+package io.sesProject.map;
 
 import com.badlogic.gdx.math.Rectangle;
 import io.SesProject.model.game.map.GameMap;
@@ -28,7 +28,7 @@ public class BoundingBoxTest {
     public void testEmptyMapBounds() {
         gameMap.addLayer(terrainLayer);
         Rectangle bounds = gameMap.getActualBounds();
-        
+
         // Empty map should return theoretical dimensions
         assertNotNull(bounds);
         assertEquals(0, bounds.x);
@@ -42,9 +42,9 @@ public class BoundingBoxTest {
         Tile tile = new Tile(100, 200, 32, 32, null, true);
         terrainLayer.addChild(tile);
         gameMap.addLayer(terrainLayer);
-        
+
         Rectangle bounds = gameMap.getActualBounds();
-        
+
         assertNotNull(bounds);
         assertEquals(100, bounds.x, 0.001);
         assertEquals(200, bounds.y, 0.001);
@@ -57,14 +57,14 @@ public class BoundingBoxTest {
         Tile tile1 = new Tile(100, 100, 32, 32, null, true);
         Tile tile2 = new Tile(200, 200, 32, 32, null, true);
         Tile tile3 = new Tile(150, 150, 32, 32, null, false);
-        
+
         terrainLayer.addChild(tile1);
         terrainLayer.addChild(tile2);
         terrainLayer.addChild(tile3);
         gameMap.addLayer(terrainLayer);
-        
+
         Rectangle bounds = gameMap.getActualBounds();
-        
+
         assertNotNull(bounds);
         // Min should be at tile1's position
         assertEquals(100, bounds.x, 0.001);
@@ -79,13 +79,13 @@ public class BoundingBoxTest {
         // Simulate a map with empty tiles at the borders
         Tile tile1 = new Tile(320, 320, 32, 32, null, true); // Far from origin
         Tile tile2 = new Tile(352, 352, 32, 32, null, true);
-        
+
         terrainLayer.addChild(tile1);
         terrainLayer.addChild(tile2);
         gameMap.addLayer(terrainLayer);
-        
+
         Rectangle bounds = gameMap.getActualBounds();
-        
+
         assertNotNull(bounds);
         assertEquals(320, bounds.x, 0.001);
         assertEquals(320, bounds.y, 0.001);
@@ -97,18 +97,18 @@ public class BoundingBoxTest {
     public void testMultipleLayersBounds() {
         Layer layer1 = new Layer("layer1", 0);
         Layer layer2 = new Layer("layer2", 1);
-        
+
         Tile tile1 = new Tile(50, 50, 32, 32, null, true);
         Tile tile2 = new Tile(250, 250, 32, 32, null, true);
-        
+
         layer1.addChild(tile1);
         layer2.addChild(tile2);
-        
+
         gameMap.addLayer(layer1);
         gameMap.addLayer(layer2);
-        
+
         Rectangle bounds = gameMap.getActualBounds();
-        
+
         // Should encompass both layers
         assertNotNull(bounds);
         assertEquals(50, bounds.x, 0.001);
@@ -122,13 +122,13 @@ public class BoundingBoxTest {
         // Edge case: tiles with negative coordinates
         Tile tile1 = new Tile(-100, -100, 32, 32, null, true);
         Tile tile2 = new Tile(100, 100, 32, 32, null, true);
-        
+
         terrainLayer.addChild(tile1);
         terrainLayer.addChild(tile2);
         gameMap.addLayer(terrainLayer);
-        
+
         Rectangle bounds = gameMap.getActualBounds();
-        
+
         assertNotNull(bounds);
         assertEquals(-100, bounds.x, 0.001);
         assertEquals(-100, bounds.y, 0.001);

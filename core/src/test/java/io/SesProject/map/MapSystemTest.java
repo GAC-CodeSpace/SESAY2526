@@ -1,4 +1,4 @@
-
+package io.sesProject.map;
 import io.SesProject.model.game.map.GameMap;
 import io.SesProject.model.game.map.Layer;
 import io.SesProject.model.game.map.Tile;
