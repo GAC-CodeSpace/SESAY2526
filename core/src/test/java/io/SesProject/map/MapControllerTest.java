@@ -1,4 +1,4 @@
-package io.SesProject.map;
+package io.sesProject.map;
 
 import io.SesProject.controller.map.MapController;
 import io.SesProject.model.game.map.GameMap;

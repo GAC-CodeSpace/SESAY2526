@@ -1,4 +1,4 @@
-package io.SesProject.map;
+package io.sesProject.map;
 
 import io.SesProject.controller.map.MapController;
 import io.SesProject.model.game.map.GameMap;
@@ -60,7 +60,7 @@ public class TransitionSystemTest {
     public void testGameMapGetTransitionTiles() {
         // Create a layer with multiple tiles
         Layer layer = new Layer("test_layer", 0);
-        
+
         // Add a transition tile
         Tile transitionTile1 = new Tile(0, 0, 16, 16, null, false, true, "level_2.tmx");
         layer.addChild(transitionTile1);
@@ -89,10 +89,10 @@ public class TransitionSystemTest {
     public void testGameMapNoTransitionTiles() {
         // Create a layer with only regular tiles
         Layer layer = new Layer("test_layer", 0);
-        
+
         Tile regularTile1 = new Tile(0, 0, 16, 16, null, true, false, null);
         Tile regularTile2 = new Tile(16, 0, 16, 16, null, false, false, null);
-        
+
         layer.addChild(regularTile1);
         layer.addChild(regularTile2);
 
